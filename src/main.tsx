@@ -20,7 +20,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <PreferencesProvider>
-        <MotionConfig reducedMotion="user">
+        <MotionConfig reducedMotion="never">
           <Root />
         </MotionConfig>
       </PreferencesProvider>
