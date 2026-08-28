@@ -254,9 +254,7 @@ select {
   color: var(--text-faint);
   letter-spacing: 0.4px;
 }
-.weekday.wk-sun {
-  color: var(--danger);
-}
+.weekday.wk-sun,
 .weekday.wk-sat {
   color: var(--accent-strong);
 }
@@ -399,9 +397,7 @@ select {
 .day-cell.wk-end.in-month {
   background: var(--wk-bg, var(--surface-2));
 }
-.day-cell.w0-sun .day-num {
-  color: var(--danger);
-}
+.day-cell.w0-sun .day-num,
 .day-cell.w6-sat .day-num {
   color: var(--accent-strong);
 }
@@ -447,31 +443,30 @@ select {
 
 /* lunar day + festival marker under the date number */
 .day-lunar {
-  font-size: 10px;
+  font-size: clamp(8px, 2.6vw, 10px);
   font-weight: 600;
   color: var(--text-faint);
-  line-height: 1;
+  line-height: 1.1;
   white-space: nowrap;
-  overflow: hidden;
-  max-width: 100%;
-  text-overflow: ellipsis;
   padding: 0 2px;
+  letter-spacing: -0.2px;
 }
 .day-lunar.on {
   color: var(--accent-contrast);
 }
-.day-lunar .day-marker {
-  font-style: normal;
-  font-weight: 800;
-  font-size: 9px;
-  color: var(--danger);
+/* holiday/festival get a small dot at top-right of the cell */
+.holiday-dot {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 0 2px var(--surface);
 }
-.day-lunar.on .day-marker {
-  color: var(--accent-contrast);
-}
-/* festival/holiday dates get a tinted dot under lunar */
-.day-cell.holiday .day-lunar {
-  color: var(--danger);
+.day-cell.selected .holiday-dot {
+  background: var(--accent);
 }
 .vis-count {
   font-size: 9px;
