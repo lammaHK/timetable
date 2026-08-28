@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { MotionConfig } from 'framer-motion'
 import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext'
@@ -19,7 +20,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <PreferencesProvider>
-        <Root />
+        <MotionConfig reducedMotion="user">
+          <Root />
+        </MotionConfig>
       </PreferencesProvider>
     </AuthProvider>
   </StrictMode>,

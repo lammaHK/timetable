@@ -96,6 +96,24 @@ button {
   color: inherit;
 }
 
+/* Keyboard focus indicator — visible everywhere, off for mouse clicks */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring) !important;
+}
+
+/* ===== Reduced motion (accessibility) ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 input,
 textarea,
 select {
@@ -108,10 +126,7 @@ select {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(1200px 500px at 80% -10%, var(--accent-soft), transparent 60%),
-    radial-gradient(900px 400px at 0% 110%, var(--bg-soft), transparent 60%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .app-inner {
