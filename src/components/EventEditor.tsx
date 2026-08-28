@@ -211,7 +211,7 @@ export default function EventEditor({
 
   const dateLabel = date ? date.format('YYYY-MM-DD') : ''
   const showPresets = !isEdit && (presets.length > 0 || isAdmin)
-  const editable = !event || user?.id === event.owner_id || participantIds.includes(user?.id || '')
+  const editable = !event || !user || isAdmin || user.id === event.owner_id || participantIds.includes(user.id)
 
   return (
     <AnimatePresence>

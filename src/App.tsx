@@ -143,8 +143,9 @@ export default function App() {
   }
 
   const openEdit = (e: AppEvent) => {
-    // Only the owner can edit
-    if (!user || e.owner_id !== user.id) {
+    // Owner, participants, or admins can open the editor (admins may also remove anyone's event)
+    const canEdit = user && (e.owner_id === user.id || isAdmin)
+    if (!canEdit) {
       if (!user) setShowLogin(true)
       return
     }
