@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import type { PointerEvent as RPointerEvent } from 'react'
+import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion'
 import type { Dayjs } from 'dayjs'
 import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
@@ -13,6 +14,8 @@ const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 const MONTH_SHORT_ZH = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
 const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WD_ZH = ['週日', '週一', '週二', '週三', '週四', '週五', '週六']
+
+type Level = 'half' | 'full'
 
 export default function DaySheet({
   open,
@@ -43,23 +46,48 @@ export default function DaySheet({
   const vh = typeof window !== 'undefined' ? window.innerHeight : 800
   const halfH = vh * 0.55
   const fullH = vh * 0.86
-  const [level, setLevel] = useState<'half' | 'full'>('half')
+  const [level, setLevel] = useState<Level>('half')
 
-  // Pure framer drag: framer animates the sheet's transform natively (GPU) while dragging,
-  // so it tracks the finger instantly. We only choose the resting level on release.
-  const onDragEnd = (_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
-    const off = info.offset.y
-    const vel = info.velocity.y
-    if (off > 90 || vel > 700) {
+  // Manual drag: we track touch/pointer on the grab+head handle with a motion value.
+  // This is reliable on iOS Safari (framer's drag on fixed elements can be flaky there).
+  const y = useMotionValue(0)
+  const springY = useSpring(y, { stiffness: 400, damping: 40 })
+  const dragStart = useRef<{ y: number; pointer: number } | null>(null)
+  const velocity = useRef(0)
+
+  const onDown = (e: RPointerEvent) => {
+    ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
+    dragStart.current = { y: y.get(), pointer: e.clientY }
+    velocity.current = 0
+  }
+  const onMove = (e: RPointerEvent) => {
+    if (!dragStart.current) return
+    const dy = e.clientY - dragStart.current.pointer
+    // clamp so it can't go above fully-open (never positive opening beyond top)
+    const next = Math.max(0, dy)
+    y.set(next)
+    velocity.current = dy
+  }
+  const onUp = () => {
+    if (!dragStart.current) return
+    const off = y.get()
+    const vel = velocity.current
+    dragStart.current = null
+    // snap
+    if (off > 90 || vel > 120) {
       onClose()
       return
     }
-    if (vel < -700 || off < -40) {
+    if (vel < -120) {
       setLevel('full')
+    } else if (off > 40) {
+      setLevel('half')
     } else {
       setLevel('half')
     }
+    y.set(0) // spring back to resting
   }
+
   return (
     <AnimatePresence>
       {open && (
@@ -75,29 +103,32 @@ export default function DaySheet({
           <motion.div
             key="sheet"
             className="sheet"
-            style={{ height: level === 'full' ? fullH : halfH }}
+            style={{ height: level === 'full' ? fullH : halfH, y: springY }}
             initial={{ y: vh, opacity: 0 }}
             animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 32 } }}
             exit={{ y: vh, opacity: 0, transition: { duration: 0.26, ease: [0.32, 0.72, 0, 1] } }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: vh }}
-            dragElastic={{ top: 0, bottom: 0.3 }}
-            onDragEnd={onDragEnd}
           >
-          <div className="sheet-grab" onClick={() => setLevel((l) => (l === 'full' ? 'half' : 'full'))} />
-          <div className="sheet-head">
-            <div>
-              <div className="month-title" style={{ fontSize: 19 }}>{dateLabel}</div>
-              {holidayLabel && (
-                <div className="sheet-holiday">{holidayLabel}</div>
-              )}
+            <div
+              className="sheet-drag"
+              style={{ touchAction: 'none' }}
+              onPointerDown={onDown}
+              onPointerMove={onMove}
+              onPointerUp={onUp}
+              onPointerCancel={onUp}
+            >
+              <div className="sheet-grab" onClick={() => setLevel((l) => (l === 'full' ? 'half' : 'full'))} />
+              <div className="sheet-head">
+                <div>
+                  <div className="month-title" style={{ fontSize: 19 }}>{dateLabel}</div>
+                  {holidayLabel && <div className="sheet-holiday">{holidayLabel}</div>}
+                </div>
+                <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
+                  <X size={20} />
+                </button>
+              </div>
             </div>
-            <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
-              <X size={20} />
-            </button>
-          </div>
 
-          <div className="sheet-body">
+            <div className="sheet-body">
               {!user && (
                 <div className="banner">
                   <div className="banner-icon">
@@ -151,7 +182,7 @@ export default function DaySheet({
                 </div>
               )}
             </div>
-        </motion.div>
+          </motion.div>
         </>
       )}
     </AnimatePresence>
