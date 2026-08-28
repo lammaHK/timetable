@@ -1,4 +1,4 @@
-export type Visibility = 'private' | 'members' | 'public'
+export type Visibility = 'private' | 'members' | 'public' | 'specific'
 
 export interface AppEvent {
   id: string
@@ -48,4 +48,19 @@ export interface Profile {
   created_at: string
 }
 
-export const VISIBILITY_ORDER: Visibility[] = ['public', 'members', 'private']
+export interface EventRevision {
+  id: string
+  event_id: string
+  changed_by: string
+  changed_by_name?: string | null
+  reason: string | null
+  prev_title: string | null
+  prev_start_time: string | null
+  prev_end_time: string | null
+  prev_all_day: boolean | null
+  prev_note: string | null
+  prev_visibility: Visibility | null
+  created_at: string
+}
+
+export const VISIBILITY_ORDER: Visibility[] = ['public', 'members', 'specific', 'private']

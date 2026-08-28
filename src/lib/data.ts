@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { isBackendConfigured } from '../lib/config'
-import type { AppEvent, EventPreset, Profile, UserSettings, Visibility } from '../lib/types'
+import type { AppEvent, EventPreset, EventRevision, Profile, UserSettings, Visibility } from '../lib/types'
 
 export async function fetchMonthEvents(year: number, month: number): Promise<AppEvent[]> {
   if (!isBackendConfigured) return []
@@ -151,6 +151,86 @@ export async function deletePreset(id: string): Promise<boolean> {
     return false
   }
   return true
+}
+
+// ---- Participants / specific visibility / revisions ----
+
+export async function setParticipants(eventId: string, userIds: string[]): Promise<boolean> {
+  const { error } = await supabase.rpc('set_participants', { p_event_id: eventId, p_user_ids: userIds })
+  if (error) {
+    console.error('setParticipants', error)
+    return false
+  }
+  return true
+}
+
+export async function fetchParticipantIds(eventId: string): Promise<string[]> {
+  const { data, error } = await supabase.from('event_participants').select('user_id').eq('event_id', eventId)
+  if (error) {
+    console.error('fetchParticipantIds', error)
+    return []
+  }
+  return (data ?? []).map((r: { user_id: string }) => r.user_id)
+}
+
+export async function setVisibilityMembers(eventId: string, userIds: string[]): Promise<boolean> {
+  const { error } = await supabase.rpc('set_visibility_members', { p_event_id: eventId, p_user_ids: userIds })
+  if (error) {
+    console.error('setVisibilityMembers', error)
+    return false
+  }
+  return true
+}
+
+export async function fetchVisibilityMemberIds(eventId: string): Promise<string[]> {
+  const { data, error } = await supabase.from('event_visibility_members').select('user_id').eq('event_id', eventId)
+  if (error) {
+    console.error('fetchVisibilityMemberIds', error)
+    return []
+  }
+  return (data ?? []).map((r: { user_id: string }) => r.user_id)
+}
+
+/** Record a revision when an existing event is edited. Pass the pre-edit values. */
+export async function addRevision(
+  eventId: string,
+  reason: string,
+  prev: { title: string; start_time: string | null; end_time: string | null; all_day: boolean; note: string; visibility: Visibility },
+): Promise<boolean> {
+  const { error } = await supabase.rpc('add_revision', {
+    p_event_id: eventId,
+    p_reason: reason,
+    p_prev_title: prev.title,
+    p_prev_start_time: prev.start_time,
+    p_prev_end_time: prev.end_time,
+    p_prev_all_day: prev.all_day,
+    p_prev_note: prev.note,
+    p_prev_visibility: prev.visibility,
+  })
+  if (error) {
+    console.error('addRevision', error)
+    return false
+  }
+  return true
+}
+
+export async function listRevisions(eventId: string): Promise<EventRevision[]> {
+  const { data, error } = await supabase.rpc('list_revisions', { p_event_id: eventId })
+  if (error) {
+    console.error('listRevisions', error)
+    return []
+  }
+  return (data ?? []) as EventRevision[]
+}
+
+/** Basic list of other active members, for picking participants / specific-visibility targets. */
+export async function fetchActiveMembers(): Promise<{ id: string; email: string; full_name: string }[]> {
+  const { data, error } = await supabase.rpc('list_active_members')
+  if (error) {
+    console.error('fetchActiveMembers', error)
+    return []
+  }
+  return (data ?? []) as { id: string; email: string; full_name: string }[]
 }
 
 /** Minimal display name for the user (used as owner_name on inserts). */

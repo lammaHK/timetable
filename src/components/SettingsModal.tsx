@@ -38,15 +38,19 @@ export default function SettingsModal({
   const { t } = useI18n()
   const { theme, setTheme, lang, setLang, defaultVisibility, setDefaultVisibility } = usePrefs()
   const { user, signOut, isAdmin } = useAuth()
+  const displayName = (user?.user_metadata?.username as string) || user?.user_metadata?.full_name || (user?.email && !user.email.endsWith('@timetable.local') ? user.email.split('@')[0] : '') || ''
+  const avatarChar = displayName?.[0]?.toUpperCase() || '?'
+  const showRawEmail = user?.email && !user.email.endsWith('@timetable.local')
 
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div className="scrim" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-          <motion.div className="modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div className="modal" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div
               className="modal-card"
+              onClick={(e) => e.stopPropagation()}
               initial={{ y: 60, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 40, opacity: 0 }}
@@ -100,15 +104,15 @@ export default function SettingsModal({
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
                       <div className="avatar" style={{ width: 44, height: 44, fontSize: 18 }}>
-                        {user.email?.[0]?.toUpperCase() || '?'}
+                        {avatarChar}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {user.user_metadata?.full_name || user.email}
+                          {displayName}
                         </div>
-                        {user.email && user.user_metadata?.full_name ? (
+                        {showRawEmail && (
                           <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{user.email}</div>
-                        ) : null}
+                        )}
                       </div>
                       <button className="btn btn-danger btn-sm" onClick={() => signOut()}>
                         {t('signOut')}

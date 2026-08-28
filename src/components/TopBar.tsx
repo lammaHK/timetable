@@ -20,7 +20,8 @@ export default function TopBar({
 
   const toggleTheme = () => setTheme(effDark ? 'light' : 'dark')
   const toggleLang = () => setLang(lang === 'zh' ? 'en' : 'zh')
-  const initial = user?.email?.[0]?.toUpperCase() || '?'
+  const uname = (user?.user_metadata?.username as string) || (user?.email && !user.email.endsWith('@timetable.local') ? user.email.split('@')[0] : '')
+  const initial = uname?.[0]?.toUpperCase() || '?'
 
   return (
     <header className="topbar">

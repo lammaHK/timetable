@@ -6,7 +6,7 @@ import { useAuth } from './context/AuthContext'
 import { usePrefs } from './context/PreferencesContext'
 import { useI18n } from './lib/i18n'
 import { isBackendConfigured } from './lib/config'
-import { displayNameOf, createEvent, updateEvent, deleteEvent, fetchMonthEvents, fetchPresets } from './lib/data'
+import { displayNameOf, createEvent, updateEvent, deleteEvent, fetchMonthEvents, fetchPresets, setParticipants, setVisibilityMembers, addRevision } from './lib/data'
 import type { AppEvent, EventPreset, Visibility } from './lib/types'
 import TopBar from './components/TopBar'
 import MonthCalendar from './components/MonthCalendar'
@@ -63,9 +63,14 @@ export default function App() {
     note: string
     visibility: Visibility
     preset_id?: string | null
+    participantIds?: string[]
+    visibilityMemberIds?: string[]
+    revisionReason?: string | null
+    prevSnapshot?: { title: string; start_time: string | null; end_time: string | null; all_day: boolean; note: string; visibility: Visibility } | null
   }) => {
     if (!uid || !editor.date) return
     const date = editor.date.format('YYYY-MM-DD')
+    let targetEventId = v.id ?? null
     if (v.id) {
       const ok = await updateEvent(v.id, {
         title: v.title,
@@ -76,6 +81,10 @@ export default function App() {
         visibility: v.visibility,
       })
       if (!ok) return
+      // record revision for edits
+      if (v.revisionReason && v.prevSnapshot) {
+        await addRevision(v.id, v.revisionReason, v.prevSnapshot)
+      }
     } else {
       const created = await createEvent({
         owner_id: uid,
@@ -91,6 +100,12 @@ export default function App() {
         preset_id: v.preset_id ?? null,
       })
       if (!created) return
+      targetEventId = created.id
+    }
+    // sync participants + specific-visibility members
+    if (targetEventId) {
+      if (v.participantIds) await setParticipants(targetEventId, v.participantIds)
+      if (v.visibilityMemberIds) await setVisibilityMembers(targetEventId, v.visibilityMemberIds)
     }
     setEditor({ open: false, event: null, date: null })
     await loadMonth(viewDate)

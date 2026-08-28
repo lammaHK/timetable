@@ -1,66 +1,76 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, Envelope } from '@phosphor-icons/react'
+import { X } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
 
-type Mode = 'signin' | 'signup' | 'forgot'
+type Mode = 'signin' | 'signup'
+
+// Convert a username to the hidden email used by Supabase auth.
+// Usernames are case-insensitive and unique.
+function usernameToEmail(username: string): string {
+  return `${username.trim().toLowerCase()}@timetable.local`
+}
+
+const USERNAME_RE = /^[a-zA-Z0-9_\u4e00-\u9fff]{2,24}$/
 
 export default function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useI18n()
   const [mode, setMode] = useState<Mode>('signin')
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [sent, setSent] = useState(false)
 
-  const back = () => {
+  const swapMode = () => {
     setError('')
-    setSent(false)
-    setMode('signin')
+    setMode((m) => (m === 'signin' ? 'signup' : 'signin'))
   }
 
   const submit = async () => {
-    if (!email.trim() || (!password && mode !== 'forgot')) return
+    const uname = username.trim()
+    if (!uname || !USERNAME_RE.test(uname)) {
+      setError(t('usernameInvalid'))
+      return
+    }
+    if (!password) return
     setBusy(true)
     setError('')
+    const email = usernameToEmail(uname)
     try {
       if (mode === 'signin') {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        onClose()
-      } else if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email: email.trim(), password })
-        if (error) throw error
-        // autoconfirm is on → session returned immediately; close modal
         onClose()
       } else {
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username: uname, full_name: uname } },
+        })
         if (error) throw error
-        setSent(true)
+        // autoconfirm is on → session returned immediately
+        onClose()
       }
     } catch (e: any) {
-      setError(t(e?.message || 'signInFailed'))
+      const msg = e?.message || ''
+      setError(msg.includes('already') || msg.includes('registered') ? t('usernameTaken') : t('signInFailed'))
     } finally {
       setBusy(false)
     }
   }
 
-  const titles: Record<Mode, string> = {
-    signin: t('signInTitle'),
-    signup: t('signUpTitle'),
-    forgot: t('forgotTitle'),
-  }
+  const isSignin = mode === 'signin'
 
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div className="scrim" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-          <motion.div className="modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div className="modal" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div
               className="modal-card"
+              onClick={(e) => e.stopPropagation()}
               initial={{ y: 60, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 40, opacity: 0 }}
@@ -68,9 +78,9 @@ export default function LoginModal({ open, onClose }: { open: boolean; onClose: 
             >
               <div className="modal-head">
                 <div>
-                  <div className="modal-title">{titles[mode]}</div>
+                  <div className="modal-title">{isSignin ? t('signInTitle') : t('signUpTitle')}</div>
                   <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 3 }}>
-                    {mode === 'signin' ? t('signInSubtitle') : mode === 'signup' ? t('signUpSubtitle') : t('forgotSubtitle')}
+                    {isSignin ? t('signInSubtitle') : t('signUpSubtitle')}
                   </div>
                 </div>
                 <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
@@ -78,72 +88,49 @@ export default function LoginModal({ open, onClose }: { open: boolean; onClose: 
                 </button>
               </div>
 
-              {sent ? (
-                <div className="banner" style={{ border: 'none', background: 'var(--accent-soft)', justifyContent: 'center', marginTop: 8 }}>
-                  <Envelope size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
-                  <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{t('checkEmail')}</span>
+              <div className="field">
+                <div className="field-label">{t('username')}</div>
+                <input
+                  className="text-input"
+                  placeholder={t('usernamePlaceholder')}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="username"
+                  disabled={busy}
+                />
+              </div>
+
+              <div className="field">
+                <div className="field-label">{t('password')}</div>
+                <input
+                  className="text-input"
+                  type="password"
+                  placeholder={!isSignin ? t('passwordHint') : '••••••••'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={isSignin ? 'current-password' : 'new-password'}
+                  onKeyDown={(e) => e.key === 'Enter' && submit()}
+                  disabled={busy}
+                />
+              </div>
+
+              {error && (
+                <div style={{ color: 'var(--danger)', fontSize: 13, marginBottom: 12, background: 'var(--danger-soft)', padding: '10px 12px', borderRadius: 10 }}>
+                  {error}
                 </div>
-              ) : (
-                <>
-                  <div className="field">
-                    <div className="field-label">{t('email')}</div>
-                    <input
-                      className="text-input"
-                      type="email"
-                      inputMode="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      autoCapitalize="none"
-                      autoComplete="email"
-                      disabled={busy}
-                    />
-                  </div>
-
-                  {mode !== 'forgot' && (
-                    <div className="field">
-                      <div className="field-label">{t('password')}</div>
-                      <input
-                        className="text-input"
-                        type="password"
-                        placeholder={mode === 'signup' ? t('passwordHint') : '••••••••'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                        onKeyDown={(e) => e.key === 'Enter' && submit()}
-                        disabled={busy}
-                      />
-                    </div>
-                  )}
-
-                  {error && (
-                    <div style={{ color: 'var(--danger)', fontSize: 13, marginBottom: 12, background: 'var(--danger-soft)', padding: '10px 12px', borderRadius: 10 }}>
-                      {error}
-                    </div>
-                  )}
-
-                  <button className="btn btn-primary btn-block" onClick={submit} disabled={busy || !email.trim() || (!password && mode !== 'forgot')}>
-                    {mode === 'signin' ? t('signIn') : mode === 'signup' ? t('signUp') : t('sendLink')}
-                  </button>
-
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 16, fontSize: 13 }}>
-                    {mode === 'signin' && (
-                      <button className="link-btn" onClick={() => { setMode('forgot'); setError('') }}>
-                        {t('forgotPassword')}
-                      </button>
-                    )}
-                    {mode === 'signin' ? (
-                      <button className="link-btn" onClick={() => { setMode('signup'); setError('') }}>
-                        {t('needAccount')}
-                      </button>
-                    ) : (
-                      <button className="link-btn" onClick={back}>
-                        {t('hasAccount')}
-                      </button>
-                    )}
-                  </div>
-                </>
               )}
+
+              <button className="btn btn-primary btn-block" onClick={submit} disabled={busy || !username.trim() || !password}>
+                {isSignin ? t('signIn') : t('signUp')}
+              </button>
+
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16, fontSize: 13 }}>
+                <button className="link-btn" onClick={swapMode}>
+                  {isSignin ? t('needAccount') : t('hasAccount')}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         </>

@@ -535,6 +535,30 @@ select {
   align-items: center;
   justify-content: space-between;
   padding: 6px 18px 4px;
+  gap: 8px;
+}
+.sheet-snaps {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sheet-snap-btn {
+  width: 24px;
+  height: 18px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: background 0.18s, color 0.18s;
+}
+.sheet-snap-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.sheet-snap-btn:first-child {
+  transform: rotate(180deg);
 }
 .sheet-title {
   font-size: 19px;
@@ -790,6 +814,71 @@ select {
   border-radius: 10px;
   margin-bottom: 14px;
 }
+.member-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.18s var(--ease);
+}
+.member-chip.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+.member-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  display: inline-grid;
+  place-items: center;
+  font-size: 11px;
+}
+.member-chip.on .member-avatar {
+  background: var(--accent-strong);
+}
+.member-chip-check {
+  color: var(--accent);
+  font-weight: 800;
+}
+.editor-history-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 8px 10px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  transition: background 0.18s;
+}
+.editor-history-toggle:hover {
+  background: var(--accent-soft);
+}
+.revision-list {
+  display:flex; flex-direction:column; gap:8px; margin-bottom:14px}
+.revision-item {
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface-2);
+}
+.revision-title { font-weight: 700; font-size: 14px; }
+.revision-note { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
 .color-swatch {
   width: 34px;
   height: 34px;
@@ -860,6 +949,10 @@ select {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
+}
+.seg.seg-4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
 }
 .seg-item {
   background: var(--surface-2);
