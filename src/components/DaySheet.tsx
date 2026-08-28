@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
-import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion'
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Dayjs } from 'dayjs'
 import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import { VisibilityBadge } from './VisibilityPicker'
 import { formatTime } from '../lib/dates'
+import { getDateInfo } from '../lib/cn'
 import type { AppEvent } from '../lib/types'
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -30,6 +31,8 @@ export default function DaySheet({
   const { user } = useAuth()
   const isZh = lang === 'zh'
   const dateLabel = `${isZh ? MONTH_SHORT_ZH[date.month()] : MONTH_SHORT[date.month()]} ${date.date()} · ${isZh ? WD_ZH[date.day()] : WD[date.day()]}`
+  const cn = getDateInfo(date.format('YYYY-MM-DD'))
+  const holidayLabel = cn.holiday || cn.festival
   const sorted = [...events].sort((a, b) => {
     if (a.all_day !== b.all_day) return a.all_day ? -1 : 1
     return (a.start_time || '99').localeCompare(b.start_time || '99')
@@ -40,15 +43,8 @@ export default function DaySheet({
   const fullH = vh * 0.86
   const [level, setLevel] = useState<'half' | 'full'>('half')
 
-  // Sheet vertical offset. 0 = fully up (resting). drag moves y down; on release we snap.
-  const y = useMotionValue(0)
-  const ySpring = useSpring(y, { stiffness: 320, damping: 34, mass: 0.7 })
-  // Reset y when sheet opens
-  useEffect(() => {
-    y.set(0)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date.format('YYYY-MM-DD')])
-
+  // Pure framer drag: framer animates the sheet's transform natively (GPU) while dragging,
+  // so it tracks the finger instantly. We only choose the resting level on release.
   const onDragEnd = (_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
     const off = info.offset.y
     const vel = info.velocity.y
@@ -56,16 +52,11 @@ export default function DaySheet({
       onClose()
       return
     }
-    if (vel < -700) {
-      setLevel('full')
-    } else if (vel > 400 || off > 40) {
-      setLevel('half')
-    } else if (off < -40) {
+    if (vel < -700 || off < -40) {
       setLevel('full')
     } else {
       setLevel('half')
     }
-    y.set(0)
   }
 
   return (
@@ -81,19 +72,25 @@ export default function DaySheet({
         />
         <motion.div
           className="sheet"
-          style={{ height: level === 'full' ? fullH : halfH, y: ySpring }}
+          style={{ height: level === 'full' ? fullH : halfH }}
           initial={{ y: vh, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: vh, transition: { duration: 0.24, ease: [0.32, 0.72, 0, 1] } }}
           transition={{ type: 'spring', stiffness: 300, damping: 32 }}
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0.1, bottom: 0.6 }}
+          dragElastic={{ top: 0.2, bottom: 0.5 }}
+          dragTransition={{ power: 0.2, timeConstant: 150, restDelta: 1 }}
           onDragEnd={onDragEnd}
         >
           <div className="sheet-grab" onClick={() => setLevel((l) => (l === 'full' ? 'half' : 'full'))} />
           <div className="sheet-head">
-            <div className="month-title" style={{ fontSize: 19 }}>{dateLabel}</div>
+            <div>
+              <div className="month-title" style={{ fontSize: 19 }}>{dateLabel}</div>
+              {holidayLabel && (
+                <div className="sheet-holiday">{holidayLabel}</div>
+              )}
+            </div>
             <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
               <X size={20} />
             </button>

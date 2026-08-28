@@ -78,6 +78,8 @@ export default function MonthCalendar({
         ))}
       </div>
 
+      {selectedDate && renderSelectedMarker(selectedDate, lang)}
+
       <AnimatePresence mode="wait">
         <motion.div
           key={viewDate.format('YYYY-MM')}
@@ -130,4 +132,33 @@ function itemClass(wd: number): string {
   if (wd === 0) return 'w0-sun'
   if (wd === 6) return 'w6-sat'
   return ''
+}
+
+/** 選定日若是公眾假期/節日，在月曆上方顯示完整名稱（進出動畫）。 */
+function renderSelectedMarker(date: Dayjs, lang: string) {
+  const iso = date.format('YYYY-MM-DD')
+  const cn = getDateInfo(iso)
+  const label = cn.holiday || cn.festival
+  const isZh = lang === 'zh'
+  if (!label) return null
+  const sub = isZh
+    ? cn.holiday ? `公眾假期 · 農曆${cn.lunarFull}` : `節日 · ${cn.lunarFull}`
+    : cn.lunarFull
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={iso}
+        className="selected-marker"
+        initial={{ opacity: 0, y: -6, height: 0 }}
+        animate={{ opacity: 1, y: 0, height: 'auto' }}
+        exit={{ opacity: 0, y: -4, height: 0 }}
+        transition={{ duration: 0.24, ease: [0.32, 0.72, 0, 1] }}
+      >
+        <div className={`selected-marker-badge ${cn.holiday ? 'holiday' : 'festival'}`}>
+          <span className="selected-marker-title">{label}</span>
+          <span className="selected-marker-sub">{sub}</span>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  )
 }
