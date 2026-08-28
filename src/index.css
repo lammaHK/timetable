@@ -753,7 +753,7 @@ select {
   gap: 10px;
   margin-top: 22px;
   padding-top: 18px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-strong);
 }
 .editor-actions .btn {
   flex: 1;
@@ -873,15 +873,20 @@ select {
 }
 .seg-item .seg-hint {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-faint);
-  margin-top: 2px;
+  margin-top: 3px;
+  line-height: 1.3;
 }
 .seg-item.active {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent-strong);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.seg-item.active .seg-hint {
+  color: var(--text-dim);
 }
 html[data-theme='dark'] .seg-item.active {
   color: var(--accent);
