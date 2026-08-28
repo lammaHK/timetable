@@ -1,0 +1,27 @@
+export type Visibility = 'private' | 'members' | 'public'
+
+export interface AppEvent {
+  id: string
+  owner_id: string
+  owner_name?: string | null
+  date: string // YYYY-MM-DD
+  start_time: string | null // HH:mm
+  end_time: string | null
+  all_day: boolean
+  title: string
+  note: string | null
+  visibility: Visibility
+  sort_order: number
+  created_at: string
+}
+
+export interface UserSettings {
+  user_id: string
+  default_visibility: Visibility
+  theme: 'light' | 'dark' | 'system'
+  lang: 'en' | 'zh'
+  week_starts_on: 'mon' | 'sun'
+  updated_at: string
+}
+
+export const VISIBILITY_ORDER: Visibility[] = ['public', 'members', 'private']

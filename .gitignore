@@ -1,0 +1,13 @@
+# deps
+node_modules/
+dist/
+*.local
+.DS_Store
+
+# env (never commit real keys)
+.env
+.env.local
+.env.*.local
+
+# hermes
+.hermes/

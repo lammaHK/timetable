@@ -1,0 +1,200 @@
+import { createContext, useContext } from 'react'
+import type { ReactNode } from 'react'
+
+export type Lang = 'en' | 'zh'
+
+const dict = {
+  en: {
+    appName: 'TimeTable',
+    today: 'Today',
+    settings: 'Settings',
+    add: 'Add',
+    cancel: 'Cancel',
+    save: 'Save',
+    delete: 'Delete',
+    edit: 'Edit',
+    close: 'Close',
+    // calendar
+    weekday_mon: 'M',
+    weekday_tue: 'T',
+    weekday_wed: 'W',
+    weekday_thu: 'T',
+    weekday_fri: 'F',
+    weekday_sat: 'S',
+    weekday_sun: 'S',
+    month_long_mon: 'January',
+    month_long_tue: 'February',
+    month_long_wed: 'March',
+    month_long_thu: 'April',
+    month_long_fri: 'May',
+    month_long_sat: 'June',
+    month_long_sun: 'July',
+    month_long_mon2: 'August',
+    month_long_tue2: 'September',
+    month_long_wed2: 'October',
+    month_long_thu2: 'November',
+    month_long_fri2: 'December',
+    // day view
+    dayTitle: 'Day',
+    allDay: 'All day',
+    noEvents: 'Nothing scheduled',
+    noEventsHint: 'Tap + to add an event',
+    startTime: 'Start',
+    endTime: 'End',
+    title: 'Title',
+    note: 'Note',
+    visibility: 'Who can see this',
+    addEvent: 'New event',
+    editEvent: 'Edit event',
+    // visibility
+    vis_private: 'Only me',
+    vis_private_hint: 'Only you can see this',
+    vis_members: 'Members',
+    vis_members_hint: 'Visible to all signed-in members',
+    vis_public: 'Public',
+    vis_public_hint: 'Visible to everyone, even visitors',
+    // settings
+    settingsTitle: 'Settings',
+    appearance: 'Appearance',
+    theme: 'Theme',
+    theme_light: 'Light',
+    theme_dark: 'Dark',
+    theme_system: 'Follow system',
+    language: 'Language',
+    lang_en: 'English',
+    lang_zh: '繁體中文',
+    defaults: 'Defaults',
+    defaultVisibility: 'Default visibility for new events',
+    weekStart: 'Week starts on',
+    week_mon: 'Monday',
+    week_sun: 'Sunday',
+    account: 'Account',
+    signIn: 'Sign in',
+    signOut: 'Sign out',
+    signedIn_as: 'Signed in as',
+    // login
+    signInTitle: 'Welcome back',
+    signInSubtitle: 'Sign in to add and manage events',
+    signInWithGoogle: 'Continue with Google',
+    signInWithEmail: 'Continue with email',
+    email: 'Email',
+    sendLink: 'Send magic link',
+    checkEmail: 'Check your inbox for the sign-in link',
+    // guest banner
+    guestBanner: 'You are viewing as a guest',
+    signInToEdit: 'Sign in to add and edit events',
+    // misc
+    loading: 'Loading…',
+    notConfigured: 'Backend not configured yet',
+    notConfiguredHint: 'Add your Supabase keys to .env to get started',
+    signInRequired: 'Sign in required',
+  },
+  zh: {
+    appName: '時間表',
+    today: '今天',
+    settings: '設定',
+    add: '新增',
+    cancel: '取消',
+    save: '儲存',
+    delete: '刪除',
+    edit: '編輯',
+    close: '關閉',
+    weekday_mon: '一',
+    weekday_tue: '二',
+    weekday_wed: '三',
+    weekday_thu: '四',
+    weekday_fri: '五',
+    weekday_sat: '六',
+    weekday_sun: '日',
+    month_long_mon: '一月',
+    month_long_tue: '二月',
+    month_long_wed: '三月',
+    month_long_thu: '四月',
+    month_long_fri: '五月',
+    month_long_sat: '六月',
+    month_long_sun: '七月',
+    month_long_mon2: '八月',
+    month_long_tue2: '九月',
+    month_long_wed2: '十月',
+    month_long_thu2: '十一月',
+    month_long_fri2: '十二月',
+    dayTitle: '當日',
+    allDay: '全日',
+    noEvents: '今天沒有排程',
+    noEventsHint: '按 ＋ 新增事件',
+    startTime: '開始',
+    endTime: '結束',
+    title: '標題',
+    note: '備註',
+    visibility: '誰可以看到',
+    addEvent: '新增事件',
+    editEvent: '編輯事件',
+    vis_private: '僅自己',
+    vis_private_hint: '只有你自己看得到',
+    vis_members: '成員',
+    vis_members_hint: '所有登入的成員都看得到',
+    vis_public: '公開',
+    vis_public_hint: '任何人都看得到，包括訪客',
+    settingsTitle: '設定',
+    appearance: '外觀',
+    theme: '主題',
+    theme_light: '淺色',
+    theme_dark: '深色',
+    theme_system: '跟隨系統',
+    language: '語言',
+    lang_en: 'English',
+    lang_zh: '繁體中文',
+    defaults: '預設值',
+    defaultVisibility: '新增事件的預設可見度',
+    weekStart: '每週由週幾開始',
+    week_mon: '星期一',
+    week_sun: '星期日',
+    account: '帳戶',
+    signIn: '登入',
+    signOut: '登出',
+    signedIn_as: '已登入',
+    signInTitle: '歡迎回來',
+    signInSubtitle: '登入即可新增與管理事件',
+    signInWithGoogle: '使用 Google 繼續',
+    signInWithEmail: '使用電郵繼續',
+    email: '電郵',
+    sendLink: '發送登入連結',
+    checkEmail: '請檢查電郵收件匣，點擊登入連結',
+    guestBanner: '你正以訪客身份瀏覽',
+    signInToEdit: '登入即可新增與編輯事件',
+    loading: '載入中…',
+    notConfigured: '後端尚未設定',
+    notConfiguredHint: '在 .env 加入你的 Supabase 金鑰即可開始',
+    signInRequired: '需要登入',
+  },
+} as const
+
+export type TKey = keyof (typeof dict)['en']
+
+const I18nContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: (k: TKey) => string }>({
+  lang: 'zh',
+  setLang: () => {},
+  t: (k) => k,
+})
+
+export function I18nProvider({ lang, onLang, children }: { lang: Lang; onLang: (l: Lang) => void; children: ReactNode }) {
+  const t = (k: TKey) => (dict[lang][k] ?? dict.en[k] ?? k) as string
+  return <I18nContext.Provider value={{ lang, setLang: onLang, t }}>{children}</I18nContext.Provider>
+}
+
+export function useI18n() {
+  return useContext(I18nContext)
+}
+
+export const monthNames = (lang: Lang, monthIndex: number): string => {
+  const key = monthNameKey(monthIndex)
+  return dict[lang][key]
+}
+
+function monthNameKey(i: number): TKey {
+  const map: TKey[] = [
+    'month_long_mon', 'month_long_tue', 'month_long_wed', 'month_long_thu', 'month_long_fri', 'month_long_sat', 'month_long_sun',
+    'month_long_mon2', 'month_long_tue2', 'month_long_wed2', 'month_long_thu2', 'month_long_fri2',
+  ]
+  return map[i]
+}
