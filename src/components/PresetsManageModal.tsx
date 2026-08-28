@@ -81,15 +81,21 @@ export default function PresetsManageModal({ open, onClose, onSaved }: { open: b
     <AnimatePresence>
       {open && (
         <>
-          <motion.div className="scrim" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-          <motion.div className="modal" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            className="scrim"
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+          />
+          <motion.div className="modal" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
             <motion.div
               className="modal-card"
               onClick={(e) => e.stopPropagation()}
               initial={{ y: 60, opacity: 0, scale: 0.98 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 40, opacity: 0 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 340 }}
+              animate={{ y: 0, opacity: 1, scale: 1, transition: { type: 'spring', damping: 28, stiffness: 340 } }}
+              exit={{ y: 28, opacity: 0, scale: 0.985, transition: { duration: 0.22, ease: 'easeOut' } }}
             >
               <div className="modal-head">
                 <div>

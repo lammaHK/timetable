@@ -44,12 +44,19 @@ export default function DaySheet({
   return (
     <AnimatePresence>
       <>
-        <motion.div className="scrim" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+        <motion.div
+          className="scrim"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+        />
         <motion.div
           className="sheet"
           initial={{ y: window.innerHeight }}
           animate={{ y: 0 }}
-          exit={{ y: window.innerHeight }}
+          exit={{ y: window.innerHeight, transition: { duration: 0.26, ease: [0.32, 0.72, 0, 1] } }}
           transition={{ type: 'spring', damping: 30, stiffness: 280 }}
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
