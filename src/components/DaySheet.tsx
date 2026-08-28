@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion'
 import type { Dayjs } from 'dayjs'
 import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
@@ -36,42 +36,37 @@ export default function DaySheet({
   })
 
   const vh = typeof window !== 'undefined' ? window.innerHeight : 800
-  const peekH = vh * 0.22 // barely showing the header
   const halfH = vh * 0.55
   const fullH = vh * 0.86
+  const [level, setLevel] = useState<'half' | 'full'>('half')
 
-  // Sheet height driven by dragging: drag down shrinks (toward peek/hide), drag up grows (toward full).
-  const [h, setH] = useState(halfH)
-  const [dragging, setDragging] = useState(false)
-  const baseH = useRef(halfH)
+  // Sheet vertical offset. 0 = fully up (resting). drag moves y down; on release we snap.
+  const y = useMotionValue(0)
+  const ySpring = useSpring(y, { stiffness: 320, damping: 34, mass: 0.7 })
+  // Reset y when sheet opens
+  useEffect(() => {
+    y.set(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date.format('YYYY-MM-DD')])
 
-  const onDrag = (_: unknown, info: { delta: { y: number } }) => {
-    // dragging down (delta.y>0) subtracts height; up adds
-    baseH.current = Math.min(fullH, Math.max(peekH, baseH.current - info.delta.y * 1.1))
-    setH(baseH.current)
-  }
   const onDragEnd = (_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
-    baseH.current = halfH
+    const off = info.offset.y
     const vel = info.velocity.y
-    const mid = (halfH + peekH) / 2
-    if (vel > 900 || info.offset.y > vh * 0.4) {
+    if (off > 90 || vel > 700) {
       onClose()
       return
     }
-    // snap: is current height closer to full, half, or closing?
-    const cur = h
-    if (vel < -500 || cur > (halfH + fullH) / 2) {
-      setH(fullH)
-    } else if (cur < mid) {
-      // near bottom → if below peek threshold, dismiss, else go half
-      if (cur < peekH + 40) onClose()
-      else setH(halfH)
+    if (vel < -700) {
+      setLevel('full')
+    } else if (vel > 400 || off > 40) {
+      setLevel('half')
+    } else if (off < -40) {
+      setLevel('full')
     } else {
-      setH(halfH)
+      setLevel('half')
     }
+    y.set(0)
   }
-
-  const grabTap = () => setH((p) => (p > halfH + 40 ? halfH : fullH))
 
   return (
     <AnimatePresence>
@@ -86,34 +81,23 @@ export default function DaySheet({
         />
         <motion.div
           className="sheet"
-          initial={{ height: 0 }}
-          animate={{ height: dragging ? h : h }}
-          exit={{ height: 0, transition: { duration: 0.24, ease: [0.32, 0.72, 0, 1] } }}
-          transition={{ type: 'spring', damping: 32, stiffness: 300 }}
-          style={{ touchAction: 'none' }}
+          style={{ height: level === 'full' ? fullH : halfH, y: ySpring }}
+          initial={{ y: vh, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: vh, transition: { duration: 0.24, ease: [0.32, 0.72, 0, 1] } }}
+          transition={{ type: 'spring', stiffness: 300, damping: 32 }}
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0.1, bottom: 0.6 }}
+          onDragEnd={onDragEnd}
         >
-          <motion.div
-            className="sheet-drag"
-            drag="y"
-            onDragStart={() => setDragging(true)}
-            onDrag={onDrag}
-            onDragEnd={(e, info) => {
-              setDragging(false)
-              onDragEnd(e, info)
-            }}
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0 }}
-            dragMomentum={false}
-            style={{ touchAction: 'none' }}
-          >
-            <div className="sheet-grab" onClick={grabTap} />
-            <div className="sheet-head">
-              <div className="month-title" style={{ fontSize: 19 }}>{dateLabel}</div>
-              <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
-                <X size={20} />
-              </button>
-            </div>
-          </motion.div>
+          <div className="sheet-grab" onClick={() => setLevel((l) => (l === 'full' ? 'half' : 'full'))} />
+          <div className="sheet-head">
+            <div className="month-title" style={{ fontSize: 19 }}>{dateLabel}</div>
+            <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
+              <X size={20} />
+            </button>
+          </div>
 
           <div className="sheet-body">
               {!user && (
