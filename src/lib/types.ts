@@ -13,6 +13,7 @@ export interface AppEvent {
   visibility: Visibility
   sort_order: number
   preset_id?: string | null
+  status: 'active' | 'cancelled'
   created_at: string
 }
 

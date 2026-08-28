@@ -103,7 +103,9 @@ export default function MonthCalendar({
             const wd = cell.date.day() // 0=Sun
             const isWeekend = wd === 0 || wd === 6
             const dayEvents = eventsByDate.get(iso)
-            const dots = Math.min(dayEvents?.length ?? 0, 3)
+            const total = dayEvents?.length ?? 0
+            const dots = Math.min(total, 5)
+            const overflow = total > 5 ? total - 5 : 0
             const presetColor = presetColors[iso]
             const cn = getDateInfo(iso)
             const marker = cn.holiday || cn.festival
@@ -125,6 +127,7 @@ export default function MonthCalendar({
                   {Array.from({ length: dots }).map((_, i) => (
                     <span key={i} className="day-dot" style={presetColor ? { background: presetColor } : undefined} />
                   ))}
+                  {overflow > 0 && <span className="day-dot-more">+{overflow}</span>}
                 </span>
               </motion.button>
             )

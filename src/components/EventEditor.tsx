@@ -109,6 +109,8 @@ export default function EventEditor({
   const [showRevisions, setShowRevisions] = useState(false)
   const [members, setMembers] = useState<MemberOption[]>([])
   const [timeError, setTimeError] = useState<string | null>(null)
+  const [partError, setPartError] = useState<string | null>(null)
+  const [editMode, setEditMode] = useState<'normal' | 'forced'>('normal')
 
   // Load member options + (when editing) participant/visibility ids + revisions.
   useEffect(() => {
@@ -172,8 +174,14 @@ export default function EventEditor({
 
   const submit = () => {
     if (!title.trim() || timeError) return
+    // Participants are required
+    if (participantIds.length === 0) {
+      setPartError(t('participantsRequired'))
+      return
+    }
     if (isEdit && event) {
-      if (!revisionReason.trim()) return
+      const forced = editMode === 'forced'
+      if (forced && !revisionReason.trim()) return
       onSave({
         id: event.id,
         title: title.trim(),
@@ -184,15 +192,18 @@ export default function EventEditor({
         visibility,
         participantIds,
         visibilityMemberIds,
-        revisionReason: revisionReason.trim(),
-        prevSnapshot: {
-          title: event.title,
-          start_time: event.start_time,
-          end_time: event.end_time,
-          all_day: event.all_day,
-          note: event.note ?? '',
-          visibility: event.visibility,
-        },
+        // only forced changes carry a reason + full previous snapshot
+        revisionReason: forced ? revisionReason.trim() : null,
+        prevSnapshot: forced
+          ? {
+              title: event.title,
+              start_time: event.start_time,
+              end_time: event.end_time,
+              all_day: event.all_day,
+              note: event.note ?? '',
+              visibility: event.visibility,
+            }
+          : null,
       })
     } else {
       onSave({
@@ -265,27 +276,27 @@ export default function EventEditor({
                 </div>
               )}
 
-              <div className="editor-field">
+              {/* Title + all-day toggle on the first row */}
+              <div className="editor-field title-row">
                 <input className="text-input editor-title" placeholder={t('title')} value={title} onChange={(e) => setTitle(e.target.value)} enterKeyHint="done" disabled={!editable} />
+                <div className="all-day-inline" title={t('allDay')}>
+                  <button type="button" className={`switch ${allDay ? 'on' : ''}`} onClick={() => setAllDay((v) => !v)} aria-pressed={allDay} disabled={!editable} />
+                </div>
               </div>
 
               {!editable && (
                 <div className="editor-error">{t('readOnly')}</div>
               )}
 
-              <div className="editor-field editor-all-day">
-                <span className="field-label">{t('allDay')}</span>
-                <button type="button" className={`switch ${allDay ? 'on' : ''}`} onClick={() => setAllDay((v) => !v)} aria-pressed={allDay} disabled={!editable} />
-              </div>
-
               {!allDay && (
                 <div className="editor-field">
                   <div className="time-row">
-                    <div>
+                    <div className="time-col">
                       <div className="field-label">{t('startTime')}</div>
                       <input type="time" className="time-input" value={startTime} onChange={(e) => setStartTime(e.target.value)} disabled={!editable} />
                     </div>
-                    <div>
+                    <div className="time-sep">—</div>
+                    <div className="time-col">
                       <div className="field-label">{t('endTime')}</div>
                       <input type="time" className="time-input" value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={!editable} />
                     </div>
@@ -298,6 +309,41 @@ export default function EventEditor({
               </div>
 
               {timeError && <div className="editor-error">{timeError}</div>}
+
+              {/* Edit mode: normal (no reason) vs forced (reason + history) */}
+              {isEdit && event && (
+                <div className="editor-field">
+                  <div className="field-label">{t('revisionReason')}</div>
+                  <div className="seg seg-2">
+                    <button type="button" className={`seg-item ${editMode === 'normal' ? 'active' : ''}`} onClick={() => setEditMode('normal')}>
+                      {t('editModeNormal')}
+                      <span className="seg-hint">{t('editModeNormalHint')}</span>
+                    </button>
+                    <button type="button" className={`seg-item ${editMode === 'forced' ? 'active' : ''}`} onClick={() => setEditMode('forced')}>
+                      {t('editModeForced')}
+                      <span className="seg-hint">{t('editModeForcedHint')}</span>
+                    </button>
+                  </div>
+                  {editMode === 'forced' && (
+                    <textarea className="textarea" style={{ marginTop: 8 }} value={revisionReason} onChange={(e) => setRevisionReason(e.target.value)} placeholder={t('revisionReasonPlaceholder')} disabled={!editable} />
+                  )}
+                  {revisions.length > 0 && (
+                    <button className="editor-history-toggle" onClick={() => setShowRevisions(!showRevisions)}>
+                      <ClockCounterClockwise size={14} /> {t('history')}
+                    </button>
+                  )}
+                  {showRevisions && (
+                    <div className="revision-list">
+                      {revisions.map((r) => (
+                        <div key={r.id} className="revision-item">
+                          <div className="revision-title">{r.prev_title || '…'}</div>
+                          <div className="revision-note">{r.reason || t('noReason')}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="editor-field">
                 <div className="field-label">{t('visibility')}</div>
@@ -318,33 +364,10 @@ export default function EventEditor({
                 label={t('participants')}
                 options={members}
                 selected={participantIds}
-                onToggle={(id) => setParticipantIds((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))}
+                onToggle={(id) => setParticipantIds((p) => { const n = p.includes(id) ? p.filter((x) => x !== id) : [...p, id]; if (n.length) setPartError(null); return n; })}
                 empty={t('noMembers')}
               />
-
-              {isEdit && event && (
-                <>
-                  <div className="editor-field">
-                    <div className="field-label">{t('revisionReason')}</div>
-                    <textarea className="textarea" value={revisionReason} onChange={(e) => setRevisionReason(e.target.value)} placeholder={t('revisionReasonPlaceholder')} disabled={!editable} />
-                  </div>
-                  {revisions.length > 0 && (
-                    <button className="editor-history-toggle" onClick={() => setShowRevisions(!showRevisions)}>
-                      <ClockCounterClockwise size={14} /> {t('history')}
-                    </button>
-                  )}
-                  {showRevisions && (
-                    <div className="revision-list">
-                      {revisions.map((r) => (
-                        <div key={r.id} className="revision-item">
-                          <div className="revision-title">{r.prev_title || '…'}</div>
-                          <div className="revision-note">{r.reason || t('noReason')}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
+              {partError && <div className="editor-error">{partError}</div>}
 
               <div className="editor-actions">
                 {isEdit && onDelete && (
@@ -355,7 +378,7 @@ export default function EventEditor({
                 <button className="btn btn-ghost" onClick={onClose}>
                   {t('cancel')}
                 </button>
-                <button className="btn btn-primary" onClick={submit} disabled={!title.trim() || Boolean(timeError) || (isEdit && !revisionReason.trim())}>
+                <button className="btn btn-primary" onClick={submit} disabled={!title.trim() || Boolean(timeError) || (isEdit && editMode === 'forced' && !revisionReason.trim())}>
                   {t('save')}
                 </button>
               </div>

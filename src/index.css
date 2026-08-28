@@ -144,11 +144,11 @@ select {
 .logo {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 6px;
   font-weight: 800;
   font-size: 16px;
   letter-spacing: 0.2px;
-  color: var(--text);
+  color: var(--accent);
   padding: 6px 8px 6px 0;
   border-radius: 12px;
   transition: background 0.2s;
@@ -420,14 +420,23 @@ select {
 }
 .day-dots {
   display: flex;
-  gap: 3px;
-  height: 5px;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 6px;
 }
 .day-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--accent);
+}
+.day-dot-more {
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--text-faint);
+  margin-left: 2px;
+  line-height: 1;
 }
 
 /* lunar day + festival marker under the date number */
@@ -823,6 +832,39 @@ select {
 .editor-field {
   margin-bottom: 14px;
 }
+/* title + all-day toggle on one row */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.title-row .editor-title {
+  flex: 1;
+  min-width: 0;
+}
+.all-day-inline {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+/* time inputs with a separator between them */
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.time-col {
+  flex: 1;
+}
+.time-sep {
+  color: var(--text-faint);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.seg.seg-2 {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
 
 /* Date banner in the event editor */
 .date-banner {
@@ -1005,11 +1047,6 @@ select {
 .textarea {
   resize: vertical;
   min-height: 72px;
-}
-.time-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
 }
 .time-input {
   background: var(--surface-2);
