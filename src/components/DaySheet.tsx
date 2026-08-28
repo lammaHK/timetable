@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Dayjs } from 'dayjs'
-import { X, CalendarBlank } from '@phosphor-icons/react'
+import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import { VisibilityBadge } from './VisibilityPicker'
@@ -34,6 +34,13 @@ export default function DaySheet({
     return (a.start_time || '99').localeCompare(b.start_time || '99')
   })
 
+  // Drag down to dismiss (req: swipe/下拉 close, not only X/scrim)
+  const handleDragEnd = (_e: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
+    if (info.offset.y > 90 || info.velocity.y > 500) {
+      onClose()
+    }
+  }
+
   return (
     <AnimatePresence>
       <motion.div className="scrim" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
@@ -43,6 +50,11 @@ export default function DaySheet({
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.6 }}
+        onDragEnd={handleDragEnd}
+        style={{ touchAction: 'pan-y' }}
       >
         <div className="sheet-grab" />
         <div className="sheet-head">
@@ -74,7 +86,12 @@ export default function DaySheet({
                 <CalendarBlank size={34} weight="thin" />
               </div>
               <div style={{ fontWeight: 700 }}>{t('noEvents')}</div>
-              <div style={{ fontSize: 13, marginTop: 4 }}>{t('noEventsHint')}</div>
+              <div style={{ fontSize: 13, marginTop: 4, marginBottom: 14 }}>{t('noEventsHint')}</div>
+              {user && (
+                <button className="btn btn-primary btn-sm" onClick={onAdd}>
+                  <Plus size={16} weight="bold" /> {t('addEvent')}
+                </button>
+              )}
             </div>
           ) : (
             <div className="events-list">
@@ -100,6 +117,11 @@ export default function DaySheet({
                   </div>
                 )
               })}
+              <div className="events-add">
+                <button className="btn btn-ghost btn-sm" onClick={onAdd}>
+                  <Plus size={16} weight="bold" /> {t('addEvent')}
+                </button>
+              </div>
             </div>
           )}
         </div>

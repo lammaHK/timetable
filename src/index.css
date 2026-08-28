@@ -551,6 +551,12 @@ select {
   flex-direction: column;
   gap: 10px;
 }
+.events-add {
+  padding-top: 4px;
+}
+.events-add .btn {
+  width: 100%;
+}
 
 .event-row {
   background: var(--surface);
@@ -754,6 +760,35 @@ select {
 }
 .editor-actions .btn-danger {
   flex: 0;
+}
+
+/* Editor form: tight, inline-placeholder layout, no dividers except the actions bar */
+.editor-field {
+  margin-bottom: 14px;
+}
+.editor-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+.editor-title::placeholder {
+  font-weight: 600;
+  color: var(--text-faint);
+}
+.editor-all-day {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.editor-all-day .field-label {
+  margin-bottom: 0;
+}
+.editor-error {
+  color: var(--danger);
+  font-size: 13px;
+  background: var(--danger-soft);
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
 }
 .color-swatch {
   width: 34px;

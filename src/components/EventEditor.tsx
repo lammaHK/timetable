@@ -41,6 +41,24 @@ export default function EventEditor({
   const [note, setNote] = useState('')
   const [visibility, setVisibility] = useState<Visibility>(defaultVisibility)
   const [presetId, setPresetId] = useState<string | null>(null)
+  const [timeError, setTimeError] = useState<string | null>(null)
+
+  // Compute end-time validation live (req 6): end must be > start by at least 1 min when timed.
+  useEffect(() => {
+    if (!allDay && startTime && endTime) {
+      const toMin = (s: string) => {
+        const [h, m] = s.split(':').map(Number)
+        return h * 60 + m
+      }
+      if (toMin(endTime) - toMin(startTime) < 1) {
+        setTimeError(t('timeError'))
+      } else {
+        setTimeError(null)
+      }
+    } else {
+      setTimeError(null)
+    }
+  }, [allDay, startTime, endTime, t])
 
   // Initialize fields whenever the modal opens (add or edit)
   useEffect(() => {
@@ -80,7 +98,9 @@ export default function EventEditor({
   }
 
   const dateLabel = date ? date.format('YYYY-MM-DD') : ''
-  const showPresets = !isEdit && presets.length > 0
+  // Show the preset block when adding a new event (not editing), if there are
+  // presets to pick from OR the admin needs the manage entry to create them.
+  const showPresets = !isEdit && (presets.length > 0 || isAdmin)
 
   return (
     <AnimatePresence>
@@ -139,25 +159,23 @@ export default function EventEditor({
                 </div>
               )}
 
-              <div className="field">
-                <div className="field-label">{t('title')}</div>
+              <div className="editor-field">
                 <input
-                  className="text-input"
-                  placeholder={!isEdit ? t('title') : ''}
+                  className="text-input editor-title"
+                  placeholder={t('title')}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  autoFocus
                   enterKeyHint="done"
                 />
               </div>
 
-              <div className="switch-row">
-                <div className="switch-label">{t('allDay')}</div>
+              <div className="editor-field editor-all-day">
+                <span className="field-label">{t('allDay')}</span>
                 <button type="button" className={`switch ${allDay ? 'on' : ''}`} onClick={() => setAllDay((v) => !v)} aria-pressed={allDay} />
               </div>
 
               {!allDay && (
-                <div className="field">
+                <div className="editor-field">
                   <div className="time-row">
                     <div>
                       <div className="field-label">{t('startTime')}</div>
@@ -171,12 +189,15 @@ export default function EventEditor({
                 </div>
               )}
 
-              <div className="field">
-                <div className="field-label">{t('note')}</div>
-                <textarea className="textarea" value={note} onChange={(e) => setNote(e.target.value)} placeholder="" />
+              <div className="editor-field">
+                <textarea className="textarea" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('notePlaceholder')} />
               </div>
 
-              <div className="field">
+              {timeError && (
+                <div className="editor-error">{timeError}</div>
+              )}
+
+              <div className="editor-field">
                 <div className="field-label">{t('visibility')}</div>
                 <VisibilityPicker value={visibility} onChange={setVisibility} />
               </div>
@@ -190,7 +211,7 @@ export default function EventEditor({
                 <button className="btn btn-ghost" onClick={onClose}>
                   {t('cancel')}
                 </button>
-                <button className="btn btn-primary" onClick={submit} disabled={!title.trim()}>
+                <button className="btn btn-primary" onClick={submit} disabled={!title.trim() || Boolean(timeError)}>
                   {t('save')}
                 </button>
               </div>

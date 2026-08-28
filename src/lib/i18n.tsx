@@ -46,6 +46,8 @@ const dict = {
     visibility: 'Who can see this',
     addEvent: 'New event',
     editEvent: 'Edit event',
+    timeError: 'End time must be at least 1 minute after start time',
+    notePlaceholder: 'Add a note (optional)',
     // visibility
     vis_private: 'Only me',
     vis_private_hint: 'Only you can see this',
@@ -162,6 +164,8 @@ const dict = {
     visibility: '誰可以看到',
     addEvent: '新增事件',
     editEvent: '編輯事件',
+    timeError: '結束時間須晚於開始至少 1 分鐘',
+    notePlaceholder: '備註（選填）',
     vis_private: '僅自己',
     vis_private_hint: '只有你自己看得到',
     vis_members: '成員',
