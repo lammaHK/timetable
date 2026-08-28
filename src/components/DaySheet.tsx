@@ -63,14 +63,15 @@ export default function DaySheet({
     <AnimatePresence>
       <>
         <motion.div
+          key="sheet-scrim"
           className="scrim"
           onClick={onClose}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.18, ease: 'easeOut' }}
+          exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } }}
         />
         <motion.div
+          key="sheet"
           className="sheet"
           style={{ height: level === 'full' ? fullH : halfH }}
           initial={{ y: vh, opacity: 0 }}
