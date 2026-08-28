@@ -522,13 +522,19 @@ select {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: height 0.32s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .sheet-grab {
-  width: 40px;
+  width: 44px;
   height: 4px;
   border-radius: 2px;
   background: var(--border-strong);
   margin: 10px auto 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sheet-grab:hover {
+  background: var(--text-faint);
 }
 .sheet-head {
   display: flex;
@@ -536,29 +542,6 @@ select {
   justify-content: space-between;
   padding: 6px 18px 4px;
   gap: 8px;
-}
-.sheet-snaps {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.sheet-snap-btn {
-  width: 24px;
-  height: 18px;
-  border-radius: 6px;
-  display: grid;
-  place-items: center;
-  color: var(--text-dim);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  transition: background 0.18s, color 0.18s;
-}
-.sheet-snap-btn:hover {
-  background: var(--hover);
-  color: var(--text);
-}
-.sheet-snap-btn:first-child {
-  transform: rotate(180deg);
 }
 .sheet-title {
   font-size: 19px;
