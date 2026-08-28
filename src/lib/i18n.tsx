@@ -93,6 +93,19 @@ const dict = {
     // guest banner
     guestBanner: 'You are viewing as a guest',
     signInToEdit: 'Sign in to add and edit events',
+    // today section
+    todaySchedule: "Today's schedule",
+    noEventsToday: 'Nothing scheduled today',
+    moreEvents: 'More…',
+    // presets
+    presets: 'Templates',
+    noPresets: 'No templates yet',
+    managePresets: 'Manage templates',
+    addPreset: 'New template',
+    editPreset: 'Edit template',
+    savePreset: 'Save template',
+    colorForDates: 'Color for dates using this template',
+    anyoneCanApply: 'Anyone can apply this template',
     // members management
     membersTitle: 'Manage members',
     membersSubtitle: 'Members',
@@ -192,6 +205,19 @@ const dict = {
     checkEmail: '請檢查電郵收件匣，點擊登入連結',
     guestBanner: '你正以訪客身份瀏覽',
     signInToEdit: '登入即可新增與編輯事件',
+    // today section
+    todaySchedule: '今日日程',
+    noEventsToday: '今天沒有排程',
+    moreEvents: '更多…',
+    // presets
+    presets: '預設樣板',
+    noPresets: '暫無預設樣板',
+    managePresets: '管理預設樣板',
+    addPreset: '新增樣板',
+    editPreset: '編輯樣板',
+    savePreset: '儲存樣板',
+    colorForDates: '使用此樣板的日期在日曆顯示的顏色',
+    anyoneCanApply: '任何人都能用此樣板新增事件',
     // members management
     membersTitle: '管理成員',
     membersSubtitle: '成員',

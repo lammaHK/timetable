@@ -15,6 +15,7 @@ export default function MonthCalendar({
   selectedDate,
   onSelectDay,
   weekStartsOn,
+  presetColors = {},
 }: {
   viewDate: Dayjs
   onPrev: () => void
@@ -24,6 +25,7 @@ export default function MonthCalendar({
   selectedDate: Dayjs | null
   onSelectDay: (d: Dayjs) => void
   weekStartsOn: 'mon' | 'sun'
+  presetColors?: Record<string, string>
 }) {
   const { t, lang } = useI18n()
 
@@ -94,6 +96,7 @@ export default function MonthCalendar({
             const isSelected = selectedDate?.format('YYYY-MM-DD') === iso
             const dayEvents = eventsByDate.get(iso)
             const dots = Math.min(dayEvents?.length ?? 0, 4)
+            const presetColor = presetColors[iso]
             return (
               <motion.button
                 key={iso}
@@ -105,7 +108,7 @@ export default function MonthCalendar({
                 <span className="day-num">{cell.date.date()}</span>
                 <span className="day-dots">
                   {Array.from({ length: dots }).map((_, i) => (
-                    <span key={i} className="day-dot" />
+                    <span key={i} className="day-dot" style={presetColor ? { background: presetColor } : undefined} />
                   ))}
                 </span>
               </motion.button>

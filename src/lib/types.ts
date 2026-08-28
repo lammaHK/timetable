@@ -12,6 +12,21 @@ export interface AppEvent {
   note: string | null
   visibility: Visibility
   sort_order: number
+  preset_id?: string | null
+  created_at: string
+}
+
+export interface EventPreset {
+  id: string
+  created_by: string
+  title: string
+  start_time: string | null
+  end_time: string | null
+  all_day: boolean
+  note: string | null
+  visibility: Visibility
+  color: string | null
+  sort_order: number
   created_at: string
 }
 

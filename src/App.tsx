@@ -6,37 +6,51 @@ import { useAuth } from './context/AuthContext'
 import { usePrefs } from './context/PreferencesContext'
 import { useI18n } from './lib/i18n'
 import { isBackendConfigured } from './lib/config'
-import { displayNameOf, createEvent, updateEvent, deleteEvent, fetchMonthEvents } from './lib/data'
-import type { AppEvent, Visibility } from './lib/types'
+import { displayNameOf, createEvent, updateEvent, deleteEvent, fetchMonthEvents, fetchPresets } from './lib/data'
+import type { AppEvent, EventPreset, Visibility } from './lib/types'
 import TopBar from './components/TopBar'
 import MonthCalendar from './components/MonthCalendar'
+import TodaySection from './components/TodaySection'
 import DaySheet from './components/DaySheet'
 import EventEditor from './components/EventEditor'
+import PresetsManageModal from './components/PresetsManageModal'
 import SettingsModal from './components/SettingsModal'
 import MembersManageModal from './components/MembersManageModal'
 import LoginModal from './components/LoginModal'
 
 export default function App() {
   const { t } = useI18n()
-  const { user, loading } = useAuth()
+  const { user, loading, isAdmin } = useAuth()
   const { defaultVisibility } = usePrefs()
 
   const [viewDate, setViewDate] = useState<Dayjs>(dayjs())
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
   const [events, setEvents] = useState<AppEvent[]>([])
-  const [editor, setEditor] = useState<{ open: boolean; event: AppEvent | null }>({ open: false, event: null })
+  const [presets, setPresets] = useState<EventPreset[]>([])
+  const [editor, setEditor] = useState<{ open: boolean; event: AppEvent | null; date: Dayjs | null }>({ open: false, event: null, date: null })
   const [showSettings, setShowSettings] = useState(false)
   const [showMembers, setShowMembers] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
+  const [showPresets, setShowPresets] = useState(false)
 
   const loadMonth = useCallback((d: Dayjs) => {
     return fetchMonthEvents(d.year(), d.month()).then(setEvents)
   }, [])
 
+  const loadPresets = useCallback(() => {
+    if (user) return fetchPresets().then(setPresets)
+    return Promise.resolve()
+  }, [user])
+
   // Load month events; refetch when month or auth changes (visibility is auth-dependent)
   useEffect(() => {
     if (isBackendConfigured) loadMonth(viewDate)
   }, [viewDate, user?.id, loading, loadMonth])
+
+  // Load presets for signed-in users (they can apply them when adding)
+  useEffect(() => {
+    if (user) loadPresets()
+  }, [user, loadPresets])
 
   const uid = user?.id
 
@@ -48,9 +62,10 @@ export default function App() {
     all_day: boolean
     note: string
     visibility: Visibility
+    preset_id?: string | null
   }) => {
-    if (!uid || !selectedDate) return
-    const date = selectedDate.format('YYYY-MM-DD')
+    if (!uid || !editor.date) return
+    const date = editor.date.format('YYYY-MM-DD')
     if (v.id) {
       const ok = await updateEvent(v.id, {
         title: v.title,
@@ -73,16 +88,17 @@ export default function App() {
         note: v.note,
         visibility: v.visibility,
         sort_order: 100,
+        preset_id: v.preset_id ?? null,
       })
       if (!created) return
     }
-    setEditor({ open: false, event: null })
+    setEditor({ open: false, event: null, date: null })
     await loadMonth(viewDate)
   }
 
   const handleDelete = async (id: string) => {
     await deleteEvent(id)
-    setEditor({ open: false, event: null })
+    setEditor({ open: false, event: null, date: null })
     await loadMonth(viewDate)
   }
 
@@ -99,8 +115,16 @@ export default function App() {
       setShowLogin(true)
       return
     }
-    setSelectedDate((prev) => prev ?? dayjs())
-    setEditor({ open: true, event: null })
+    // FAB add: open editor for today WITHOUT opening today's DaySheet
+    setEditor({ open: true, event: null, date: dayjs() })
+  }
+
+  const openAddForDate = (d: Dayjs) => {
+    if (!user) {
+      setShowLogin(true)
+      return
+    }
+    setEditor({ open: true, event: null, date: d })
   }
 
   const openEdit = (e: AppEvent) => {
@@ -109,12 +133,20 @@ export default function App() {
       if (!user) setShowLogin(true)
       return
     }
-    setEditor({ open: true, event: e })
+    setEditor({ open: true, event: e, date: dayjs(e.date) })
   }
 
   const dayEvents = selectedDate
     ? events.filter((e) => e.date === selectedDate.format('YYYY-MM-DD'))
     : []
+
+  // date -> color, for dates that have events created from a colored preset
+  const presetColorById = new Map(presets.filter((p) => p.color).map((p) => [p.id, p.color] as [string, string]))
+  const presetColors: Record<string, string> = {}
+  for (const e of events) {
+    const c = e.preset_id ? presetColorById.get(e.preset_id) : undefined
+    if (c) presetColors[e.date] = c
+  }
 
   return (
     <div className="app">
@@ -130,16 +162,20 @@ export default function App() {
             <div style={{ color: 'var(--text-dim)', fontSize: 14, marginTop: 6 }}>{t('notConfiguredHint')}</div>
           </div>
         ) : (
-          <MonthCalendar
-            viewDate={viewDate}
-            onPrev={() => setViewDate((d) => d.subtract(1, 'month'))}
-            onNext={() => setViewDate((d) => d.add(1, 'month'))}
-            onToday={() => setViewDate(dayjs())}
-            events={events}
-            selectedDate={selectedDate}
-            onSelectDay={handleSelectDay}
-            weekStartsOn="mon"
-          />
+          <>
+            <MonthCalendar
+              viewDate={viewDate}
+              onPrev={() => setViewDate((d) => d.subtract(1, 'month'))}
+              onNext={() => setViewDate((d) => d.add(1, 'month'))}
+              onToday={() => setViewDate(dayjs())}
+              events={events}
+              selectedDate={selectedDate}
+              onSelectDay={handleSelectDay}
+              weekStartsOn="mon"
+              presetColors={presetColors}
+            />
+            <TodaySection today={dayjs()} events={events} onOpenDay={handleSelectDay} />
+          </>
         )}
 
         {!user && isBackendConfigured && (
@@ -165,7 +201,7 @@ export default function App() {
           date={selectedDate}
           events={dayEvents}
           onClose={() => setSelectedDate(null)}
-          onAdd={openAdd}
+          onAdd={() => openAddForDate(selectedDate)}
           onEdit={openEdit}
         />
       )}
@@ -176,12 +212,15 @@ export default function App() {
 
       <EventEditor
         open={editor.open}
-        date={selectedDate}
+        date={editor.date}
         event={editor.event}
+        presets={presets}
+        isAdmin={isAdmin}
         defaultVisibility={defaultVisibility}
-        onClose={() => setEditor({ open: false, event: null })}
+        onClose={() => setEditor({ open: false, event: null, date: null })}
         onSave={handleSave}
         onDelete={editor.event ? handleDelete : undefined}
+        onManagePresets={() => setShowPresets(true)}
       />
 
       <SettingsModal
@@ -190,6 +229,11 @@ export default function App() {
         onManageMembers={() => setShowMembers(true)}
       />
       <MembersManageModal open={showMembers} onClose={() => setShowMembers(false)} />
+      <PresetsManageModal
+        open={showPresets}
+        onClose={() => setShowPresets(false)}
+        onSaved={loadPresets}
+      />
       <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
     </div>
   )

@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { isBackendConfigured } from '../lib/config'
-import type { AppEvent, Profile, UserSettings, Visibility } from '../lib/types'
+import type { AppEvent, EventPreset, Profile, UserSettings, Visibility } from '../lib/types'
 
 export async function fetchMonthEvents(year: number, month: number): Promise<AppEvent[]> {
   if (!isBackendConfigured) return []
@@ -46,6 +46,7 @@ export interface EventInput {
   note: string | null
   visibility: Visibility
   sort_order: number
+  preset_id?: string | null
 }
 
 export async function createEvent(input: EventInput): Promise<AppEvent | null> {
@@ -104,6 +105,49 @@ export async function adminUpdateMember(targetId: string, patch: { is_active?: b
   const { error } = await supabase.rpc('admin_update_member', { target_id: targetId, p_is_active: patch.is_active, p_role: patch.role ?? null })
   if (error) {
     console.error('adminUpdateMember', error)
+    return false
+  }
+  return true
+}
+
+// ---- Event presets ----
+
+export async function fetchPresets(): Promise<EventPreset[]> {
+  if (!isBackendConfigured) return []
+  const { data, error } = await supabase.from('event_presets').select('*').order('sort_order', { ascending: true })
+  if (error) {
+    console.error('fetchPresets', error)
+    return []
+  }
+  return (data ?? []) as EventPreset[]
+}
+
+export async function upsertPreset(input: Partial<EventPreset>): Promise<EventPreset | null> {
+  const { data, error } = await supabase.rpc('upsert_preset', {
+    p_id: input.id ?? null,
+    p_title: input.title ?? null,
+    p_start_time: input.start_time ?? null,
+    p_end_time: input.end_time ?? null,
+    p_all_day: input.all_day ?? false,
+    p_note: input.note ?? null,
+    p_visibility: input.visibility ?? 'members',
+    p_color: input.color ?? null,
+    p_sort_order: input.sort_order ?? 100,
+  })
+  if (error) {
+    console.error('upsertPreset', error)
+    return null
+  }
+  // RPC returns the id; refetch to get the full row
+  const id = Array.isArray(data) ? data[0] : data
+  const { data: row } = await supabase.from('event_presets').select('*').eq('id', id).maybeSingle()
+  return (row as EventPreset) ?? null
+}
+
+export async function deletePreset(id: string): Promise<boolean> {
+  const { error } = await supabase.rpc('delete_preset', { p_id: id })
+  if (error) {
+    console.error('deletePreset', error)
     return false
   }
   return true

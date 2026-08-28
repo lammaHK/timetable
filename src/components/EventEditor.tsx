@@ -1,22 +1,36 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, Trash } from '@phosphor-icons/react'
+import { X, Trash, SquaresFour } from '@phosphor-icons/react'
 import type { Dayjs } from 'dayjs'
 import { useI18n } from '../lib/i18n'
 import VisibilityPicker from './VisibilityPicker'
-import type { AppEvent, Visibility } from '../lib/types'
+import type { AppEvent, EventPreset, Visibility } from '../lib/types'
 
 interface EditorProps {
   open: boolean
   date: Dayjs | null
   event: AppEvent | null
+  presets: EventPreset[]
+  isAdmin: boolean
   defaultVisibility: Visibility
   onClose: () => void
-  onSave: (v: { id?: string; title: string; start_time: string | null; end_time: string | null; all_day: boolean; note: string; visibility: Visibility }) => void
+  onSave: (v: { id?: string; title: string; start_time: string | null; end_time: string | null; all_day: boolean; note: string; visibility: Visibility; preset_id?: string | null }) => void
   onDelete?: (id: string) => void
+  onManagePresets: () => void
 }
 
-export default function EventEditor({ open, date, event, defaultVisibility, onClose, onSave, onDelete }: EditorProps) {
+export default function EventEditor({
+  open,
+  date,
+  event,
+  presets,
+  isAdmin,
+  defaultVisibility,
+  onClose,
+  onSave,
+  onDelete,
+  onManagePresets,
+}: EditorProps) {
   const { t } = useI18n()
   const isEdit = Boolean(event)
 
@@ -26,6 +40,7 @@ export default function EventEditor({ open, date, event, defaultVisibility, onCl
   const [endTime, setEndTime] = useState('')
   const [note, setNote] = useState('')
   const [visibility, setVisibility] = useState<Visibility>(defaultVisibility)
+  const [presetId, setPresetId] = useState<string | null>(null)
 
   // Initialize fields whenever the modal opens (add or edit)
   useEffect(() => {
@@ -36,8 +51,19 @@ export default function EventEditor({ open, date, event, defaultVisibility, onCl
       setEndTime(event?.end_time ? event.end_time.slice(0, 5) : '')
       setNote(event?.note ?? '')
       setVisibility(event?.visibility ?? defaultVisibility)
+      setPresetId(null)
     }
   }, [open, event, defaultVisibility])
+
+  const applyPreset = (p: EventPreset) => {
+    setTitle(p.title || '')
+    setAllDay(p.all_day ?? false)
+    setStartTime(p.start_time ? p.start_time.slice(0, 5) : '')
+    setEndTime(p.end_time ? p.end_time.slice(0, 5) : '')
+    setNote(p.note ?? '')
+    setVisibility(p.visibility ?? 'members')
+    setPresetId(p.id)
+  }
 
   const submit = () => {
     if (!title.trim()) return
@@ -49,10 +75,12 @@ export default function EventEditor({ open, date, event, defaultVisibility, onCl
       all_day: allDay,
       note: note.trim(),
       visibility,
+      preset_id: presetId,
     })
   }
 
   const dateLabel = date ? date.format('YYYY-MM-DD') : ''
+  const showPresets = !isEdit && presets.length > 0
 
   return (
     <AnimatePresence>
@@ -78,6 +106,38 @@ export default function EventEditor({ open, date, event, defaultVisibility, onCl
                   <X size={20} />
                 </button>
               </div>
+
+              {showPresets && (
+                <div className="preset-block">
+                  <div className="preset-label">
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <SquaresFour size={14} /> {t('presets')}
+                    </span>
+                    {isAdmin && (
+                      <button className="preset-manage" onClick={onManagePresets}>
+                        {t('managePresets')}
+                      </button>
+                    )}
+                  </div>
+                  <div className="preset-scroll">
+                    {presets.map((p) => (
+                      <motion.button
+                        key={p.id}
+                        className="preset-chip"
+                        onClick={() => applyPreset(p)}
+                        whileTap={{ scale: 0.96 }}
+                        style={p.color ? { borderColor: p.color } : undefined}
+                      >
+                        <span className="preset-chip-dot" style={p.color ? { background: p.color } : undefined} />
+                        <span className="preset-chip-title">
+                          {p.title}
+                          {p.start_time ? <em>{p.start_time.slice(0, 5)}</em> : null}
+                        </span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="field">
                 <div className="field-label">{t('title')}</div>
@@ -121,16 +181,16 @@ export default function EventEditor({ open, date, event, defaultVisibility, onCl
                 <VisibilityPicker value={visibility} onChange={setVisibility} />
               </div>
 
-              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+              <div className="editor-actions">
                 {isEdit && onDelete && (
-                  <button className="btn btn-danger" onClick={() => onDelete(event!.id)} style={{ flex: 0 }}>
+                  <button className="btn btn-danger" onClick={() => onDelete(event!.id)}>
                     <Trash size={18} />
                   </button>
                 )}
-                <button className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>
+                <button className="btn btn-ghost" onClick={onClose}>
                   {t('cancel')}
                 </button>
-                <button className="btn btn-primary" onClick={submit} disabled={!title.trim()} style={{ flex: 1, opacity: title.trim() ? 1 : 0.5 }}>
+                <button className="btn btn-primary" onClick={submit} disabled={!title.trim()}>
                   {t('save')}
                 </button>
               </div>
