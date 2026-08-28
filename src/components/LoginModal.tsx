@@ -3,25 +3,53 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useI18n } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
 
+type Mode = 'signin' | 'signup' | 'forgot'
+
 export default function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useI18n()
+  const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [sent, setSent] = useState(false)
 
-  const google = async () => {
-    setBusy(true)
-    await supabase.auth.signInWithOAuth({ provider: 'google' })
-    // redirect handled by supabase; keep busy off on return
-    setBusy(false)
+  const back = () => {
+    setError('')
+    setSent(false)
+    setMode('signin')
   }
 
-  const emailLink = async () => {
-    if (!email.trim()) return
+  const submit = async () => {
+    if (!email.trim() || (!password && mode !== 'forgot')) return
     setBusy(true)
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim() })
-    setBusy(false)
-    if (!error) setSent(true)
+    setError('')
+    try {
+      if (mode === 'signin') {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+        if (error) throw error
+        onClose()
+      } else if (mode === 'signup') {
+        const { error } = await supabase.auth.signUp({ email: email.trim(), password })
+        if (error) throw error
+        // autoconfirm is on → session returned immediately; close modal
+        onClose()
+      } else {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
+        if (error) throw error
+        setSent(true)
+      }
+    } catch (e: any) {
+      setError(t(e?.message || 'signInFailed'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const titles: Record<Mode, string> = {
+    signin: t('signInTitle'),
+    signup: t('signUpTitle'),
+    forgot: t('forgotTitle'),
   }
 
   return (
@@ -39,8 +67,10 @@ export default function LoginModal({ open, onClose }: { open: boolean; onClose: 
             >
               <div className="modal-head">
                 <div>
-                  <div className="modal-title">{t('signInTitle')}</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 3 }}>{t('signInSubtitle')}</div>
+                  <div className="modal-title">{titles[mode]}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 3 }}>
+                    {mode === 'signin' ? t('signInSubtitle') : mode === 'signup' ? t('signUpSubtitle') : t('forgotSubtitle')}
+                  </div>
                 </div>
                 <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -49,30 +79,14 @@ export default function LoginModal({ open, onClose }: { open: boolean; onClose: 
                 </button>
               </div>
 
-              <button className="btn btn-ghost btn-block" onClick={google} disabled={busy} style={{ marginBottom: 14 }}>
-                <svg width="18" height="18" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z" />
-                </svg>
-                {t('signInWithGoogle')}
-              </button>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '6px 0 16px' }}>
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>or</span>
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              </div>
-
               {sent ? (
-                <div className="banner" style={{ border: 'none', background: 'var(--accent-soft)', justifyContent: 'center' }}>
+                <div className="banner" style={{ border: 'none', background: 'var(--accent-soft)', justifyContent: 'center', marginTop: 8 }}>
                   <span style={{ fontWeight: 700, color: 'var(--accent)' }}>📬 {t('checkEmail')}</span>
                 </div>
               ) : (
                 <>
-                  <div className="field-label" style={{ marginBottom: 7 }}>{t('email')}</div>
-                  <div style={{ display: 'flex', gap: 10 }}>
+                  <div className="field">
+                    <div className="field-label">{t('email')}</div>
                     <input
                       className="text-input"
                       type="email"
@@ -81,10 +95,52 @@ export default function LoginModal({ open, onClose }: { open: boolean; onClose: 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       autoCapitalize="none"
+                      autoComplete="email"
+                      disabled={busy}
                     />
-                    <button className="btn btn-primary" onClick={emailLink} disabled={busy || !email.trim()}>
-                      {t('sendLink')}
-                    </button>
+                  </div>
+
+                  {mode !== 'forgot' && (
+                    <div className="field">
+                      <div className="field-label">{t('password')}</div>
+                      <input
+                        className="text-input"
+                        type="password"
+                        placeholder={mode === 'signup' ? t('passwordHint') : '••••••••'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                        onKeyDown={(e) => e.key === 'Enter' && submit()}
+                        disabled={busy}
+                      />
+                    </div>
+                  )}
+
+                  {error && (
+                    <div style={{ color: 'var(--danger)', fontSize: 13, marginBottom: 12, background: 'var(--danger-soft)', padding: '10px 12px', borderRadius: 10 }}>
+                      {error}
+                    </div>
+                  )}
+
+                  <button className="btn btn-primary btn-block" onClick={submit} disabled={busy || !email.trim() || (!password && mode !== 'forgot')}>
+                    {mode === 'signin' ? t('signIn') : mode === 'signup' ? t('signUp') : t('sendLink')}
+                  </button>
+
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 16, fontSize: 13 }}>
+                    {mode === 'signin' && (
+                      <button className="link-btn" onClick={() => { setMode('forgot'); setError('') }}>
+                        {t('forgotPassword')}
+                      </button>
+                    )}
+                    {mode === 'signin' ? (
+                      <button className="link-btn" onClick={() => { setMode('signup'); setError('') }}>
+                        {t('needAccount')}
+                      </button>
+                    ) : (
+                      <button className="link-btn" onClick={back}>
+                        {t('hasAccount')}
+                      </button>
+                    )}
                   </div>
                 </>
               )}

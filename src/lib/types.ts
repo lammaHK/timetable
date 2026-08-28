@@ -24,4 +24,13 @@ export interface UserSettings {
   updated_at: string
 }
 
+export interface Profile {
+  id: string
+  email: string | null
+  full_name: string | null
+  role: 'member' | 'admin'
+  is_active: boolean
+  created_at: string
+}
+
 export const VISIBILITY_ORDER: Visibility[] = ['public', 'members', 'private']

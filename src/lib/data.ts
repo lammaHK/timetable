@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { isBackendConfigured } from '../lib/config'
-import type { AppEvent, UserSettings, Visibility } from '../lib/types'
+import type { AppEvent, Profile, UserSettings, Visibility } from '../lib/types'
 
 export async function fetchMonthEvents(year: number, month: number): Promise<AppEvent[]> {
   if (!isBackendConfigured) return []
@@ -79,6 +79,34 @@ export async function fetchSettings(userId: string): Promise<UserSettings | null
   if (!isBackendConfigured) return null
   const { data } = await supabase.from('user_settings').select('*').eq('user_id', userId).maybeSingle()
   return (data as UserSettings) ?? null
+}
+
+export async function fetchProfile(userId: string): Promise<Profile | null> {
+  if (!isBackendConfigured) return null
+  const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+  return (data as Profile) ?? null
+}
+
+/** Admin: list all members (profiles) — only returns rows if caller is admin (RLS). */
+export async function fetchAllProfiles(): Promise<Profile[]> {
+  if (!isBackendConfigured) return []
+  const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: true })
+  if (error) {
+    console.error('fetchAllProfiles', error)
+    return []
+  }
+  return (data ?? []) as Profile[]
+}
+
+/** Admin: update a member's active flag and / or role. */
+export async function adminUpdateMember(targetId: string, patch: { is_active?: boolean; role?: Profile['role'] }): Promise<boolean> {
+  if (!isBackendConfigured) return false
+  const { error } = await supabase.rpc('admin_update_member', { target_id: targetId, p_is_active: patch.is_active, p_role: patch.role ?? null })
+  if (error) {
+    console.error('adminUpdateMember', error)
+    return false
+  }
+  return true
 }
 
 /** Minimal display name for the user (used as owner_name on inserts). */

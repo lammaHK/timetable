@@ -12,6 +12,7 @@ import MonthCalendar from './components/MonthCalendar'
 import DaySheet from './components/DaySheet'
 import EventEditor from './components/EventEditor'
 import SettingsModal from './components/SettingsModal'
+import MembersManageModal from './components/MembersManageModal'
 import LoginModal from './components/LoginModal'
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
   const [events, setEvents] = useState<AppEvent[]>([])
   const [editor, setEditor] = useState<{ open: boolean; event: AppEvent | null }>({ open: false, event: null })
   const [showSettings, setShowSettings] = useState(false)
+  const [showMembers, setShowMembers] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
 
   const loadMonth = useCallback((d: Dayjs) => {
@@ -177,7 +179,12 @@ export default function App() {
         onDelete={editor.event ? handleDelete : undefined}
       />
 
-      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
+      <SettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        onManageMembers={() => setShowMembers(true)}
+      />
+      <MembersManageModal open={showMembers} onClose={() => setShowMembers(false)} />
       <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
     </div>
   )

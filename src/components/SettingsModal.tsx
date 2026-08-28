@@ -25,10 +25,18 @@ function OptionPills<T extends string>({
   )
 }
 
-export default function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function SettingsModal({
+  open,
+  onClose,
+  onManageMembers,
+}: {
+  open: boolean
+  onClose: () => void
+  onManageMembers: () => void
+}) {
   const { t } = useI18n()
   const { theme, setTheme, lang, setLang, defaultVisibility, setDefaultVisibility } = usePrefs()
-  const { user, signOut } = useAuth()
+  const { user, signOut, isAdmin } = useAuth()
 
   return (
     <AnimatePresence>
@@ -107,6 +115,13 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
                         {t('signOut')}
                       </button>
                     </div>
+                    {isAdmin && (
+                      <div style={{ padding: '0 10px 12px' }}>
+                        <button className="btn btn-ghost btn-block" onClick={onManageMembers}>
+                          👥 {t('manageMembers')}
+                        </button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-dim)', fontSize: 14 }}>

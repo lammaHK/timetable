@@ -696,6 +696,18 @@ html[data-theme='dark'] .seg-item.active {
   flex-shrink: 0;
 }
 
+.link-btn {
+  color: var(--accent);
+  font-weight: 700;
+  padding: 4px 2px;
+}
+.link-btn:hover {
+  text-decoration: underline;
+}
+.link-btn:disabled {
+  opacity: 0.5;
+}
+
 .banner {
   display: flex;
   align-items: center;
