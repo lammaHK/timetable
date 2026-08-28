@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Dayjs } from 'dayjs'
 import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
