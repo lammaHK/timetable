@@ -148,22 +148,19 @@ select {
   font-weight: 800;
   font-size: 16px;
   letter-spacing: 0.2px;
-  color: var(--accent-contrast);
-  padding: 6px 12px 6px 8px;
+  color: var(--text);
+  padding: 6px 8px 6px 0;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  box-shadow: var(--shadow-s);
-  transition: filter 0.2s;
+  transition: background 0.2s;
 }
 
 .logo-mark {
   width: 24px;
   height: 24px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.18);
+  color: var(--accent);
   display: grid;
   place-items: center;
-  color: var(--accent-contrast);
 }
 
 .topbar-spacer {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion'
 import type { Dayjs } from 'dayjs'
 import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
@@ -60,7 +60,6 @@ export default function DaySheet({
       setLevel('half')
     }
   }
-
   return (
     <AnimatePresence>
       {open && (
@@ -81,8 +80,8 @@ export default function DaySheet({
             animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 32 } }}
             exit={{ y: vh, opacity: 0, transition: { duration: 0.26, ease: [0.32, 0.72, 0, 1] } }}
             drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0}
+            dragConstraints={{ top: 0, bottom: vh }}
+            dragElastic={{ top: 0, bottom: 0.3 }}
             onDragEnd={onDragEnd}
           >
           <div className="sheet-grab" onClick={() => setLevel((l) => (l === 'full' ? 'half' : 'full'))} />
