@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import dayjs, { Dayjs } from 'dayjs'
 import { motion } from 'framer-motion'
-import { GearSix, SignIn } from '@phosphor-icons/react'
+import { GearSix, SignIn, Plus } from '@phosphor-icons/react'
 import { useAuth } from './context/AuthContext'
 import { usePrefs } from './context/PreferencesContext'
 import { useI18n } from './lib/i18n'
@@ -171,7 +171,7 @@ export default function App() {
       )}
 
       <button className="fab" onClick={openAdd} aria-label={t('add')}>
-        <span>+</span>
+        <Plus size={26} weight="bold" />
       </button>
 
       <EventEditor
