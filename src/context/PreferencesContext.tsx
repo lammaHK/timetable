@@ -45,6 +45,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     const apply = () => {
       const eff = theme === 'system' ? (mq.matches ? 'dark' : 'light') : theme
       document.documentElement.setAttribute('data-theme', eff)
+      // keep the browser / home-screen chrome bar in sync (Safari, Android, PWA)
+      const meta = document.querySelector('meta[name="theme-color"]')
+      if (meta) meta.setAttribute('content', eff === 'dark' ? '#0b0f14' : '#0ea896')
     }
     apply()
     mq.addEventListener('change', apply)

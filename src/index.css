@@ -156,21 +156,21 @@ select {
 .logo {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   font-weight: 800;
   font-size: 17px;
   letter-spacing: 0.2px;
+  color: var(--text);
 }
 
 .logo-mark {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   display: grid;
   place-items: center;
   color: var(--accent-contrast);
-  font-size: 15px;
   box-shadow: var(--shadow-s);
 }
 
@@ -216,6 +216,7 @@ select {
   padding: 6px 4px 10px;
 }
 .month-title {
+  padding-left: 8px;
   font-size: 21px;
   font-weight: 800;
   letter-spacing: 0.3px;
@@ -395,10 +396,7 @@ select {
 .day-cell:active {
   transform: scale(0.94);
 }
-/* weekend tint */
-.day-cell.wk-end.in-month {
-  background: var(--wk-bg, var(--surface-2));
-}
+/* weekend: only the number is tinted, no background fill */
 .day-cell.w0-sun .day-num,
 .day-cell.w6-sat .day-num {
   color: var(--accent-strong);
@@ -473,37 +471,6 @@ select {
 .vis-count {
   font-size: 9px;
   color: var(--text-faint);
-}
-
-/* Selected-day holiday/festival marker above the grid */
-.selected-marker {
-  overflow: hidden;
-  padding: 0 2px 8px;
-}
-.selected-marker-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-ring);
-}
-.selected-marker-badge.holiday {
-  background: var(--danger-soft);
-  border-color: var(--danger);
-}
-.selected-marker-title {
-  font-weight: 800;
-  font-size: 14px;
-}
-.selected-marker-badge.holiday .selected-marker-title {
-  color: var(--danger);
-}
-.selected-marker-sub {
-  font-size: 11px;
-  color: var(--text-dim);
-  margin-left: auto;
 }
 
 /* ===== Buttons ===== */

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
-import type { Dayjs } from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { getMonthGrid } from '../lib/dates'
 import { useI18n, monthNames } from '../lib/i18n'
 import { getDateInfo } from '../lib/cn'
@@ -47,7 +47,7 @@ export default function MonthCalendar({
     return map
   }, [events])
 
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = dayjs().format('YYYY-MM-DD')
 
   return (
     <motion.div
@@ -55,6 +55,15 @@ export default function MonthCalendar({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.12}
+      dragDirectionLock
+      onDragEnd={(_, info) => {
+        // swipe left → next month, swipe right → previous month
+        if (info.offset.x < -60) onNext()
+        else if (info.offset.x > 60) onPrev()
+      }}
     >
       <div className="month-nav">
         <button className="month-title" onClick={onToday} style={{ cursor: 'pointer' }}>
@@ -77,8 +86,6 @@ export default function MonthCalendar({
           </div>
         ))}
       </div>
-
-      {selectedDate && renderSelectedMarker(selectedDate, lang)}
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -132,33 +139,4 @@ function itemClass(wd: number): string {
   if (wd === 0) return 'w0-sun'
   if (wd === 6) return 'w6-sat'
   return ''
-}
-
-/** 選定日若是公眾假期/節日，在月曆上方顯示完整名稱（進出動畫）。 */
-function renderSelectedMarker(date: Dayjs, lang: string) {
-  const iso = date.format('YYYY-MM-DD')
-  const cn = getDateInfo(iso)
-  const label = cn.holiday || cn.festival
-  const isZh = lang === 'zh'
-  if (!label) return null
-  const sub = isZh
-    ? cn.holiday ? `公眾假期 · 農曆${cn.lunarFull}` : `節日 · ${cn.lunarFull}`
-    : cn.lunarFull
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={iso}
-        className="selected-marker"
-        initial={{ opacity: 0, y: -6, height: 0 }}
-        animate={{ opacity: 1, y: 0, height: 'auto' }}
-        exit={{ opacity: 0, y: -4, height: 0 }}
-        transition={{ duration: 0.24, ease: [0.32, 0.72, 0, 1] }}
-      >
-        <div className={`selected-marker-badge ${cn.holiday ? 'holiday' : 'festival'}`}>
-          <span className="selected-marker-title">{label}</span>
-          <span className="selected-marker-sub">{sub}</span>
-        </div>
-      </motion.div>
-    </AnimatePresence>
-  )
 }

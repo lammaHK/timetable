@@ -75,12 +75,12 @@ export default function DaySheet({
           style={{ height: level === 'full' ? fullH : halfH }}
           initial={{ y: vh, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: vh, transition: { duration: 0.24, ease: [0.32, 0.72, 0, 1] } }}
+          exit={{ y: vh, opacity: 0, transition: { duration: 0.26, ease: [0.32, 0.72, 0, 1] } }}
           transition={{ type: 'spring', stiffness: 300, damping: 32 }}
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0.2, bottom: 0.5 }}
-          dragTransition={{ power: 0.2, timeConstant: 150, restDelta: 1 }}
+          dragElastic={{ top: 0.1, bottom: 0.35 }}
+          dragTransition={{ power: 0.15, timeConstant: 140, restDelta: 1 }}
           onDragEnd={onDragEnd}
         >
           <div className="sheet-grab" onClick={() => setLevel((l) => (l === 'full' ? 'half' : 'full'))} />
