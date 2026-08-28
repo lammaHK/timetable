@@ -15,12 +15,14 @@ const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WD_ZH = ['週日', '週一', '週二', '週三', '週四', '週五', '週六']
 
 export default function DaySheet({
+  open,
   date,
   events,
   onClose,
   onAdd,
   onEdit,
 }: {
+  open: boolean
   date: Dayjs
   events: AppEvent[]
   onClose: () => void
@@ -61,27 +63,28 @@ export default function DaySheet({
 
   return (
     <AnimatePresence>
-      <>
-        <motion.div
-          key="sheet-scrim"
-          className="scrim"
-          onClick={onClose}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } }}
-        />
-        <motion.div
-          key="sheet"
-          className="sheet"
-          style={{ height: level === 'full' ? fullH : halfH }}
-          initial={{ y: vh, opacity: 0 }}
-          animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 32 } }}
-          exit={{ y: vh, opacity: 0, transition: { duration: 0.26, ease: [0.32, 0.72, 0, 1] } }}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0}
-          onDragEnd={onDragEnd}
-        >
+      {open && (
+        <>
+          <motion.div
+            key="sheet-scrim"
+            className="scrim"
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } }}
+          />
+          <motion.div
+            key="sheet"
+            className="sheet"
+            style={{ height: level === 'full' ? fullH : halfH }}
+            initial={{ y: vh, opacity: 0 }}
+            animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 32 } }}
+            exit={{ y: vh, opacity: 0, transition: { duration: 0.26, ease: [0.32, 0.72, 0, 1] } }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0}
+            onDragEnd={onDragEnd}
+          >
           <div className="sheet-grab" onClick={() => setLevel((l) => (l === 'full' ? 'half' : 'full'))} />
           <div className="sheet-head">
             <div>
@@ -150,7 +153,8 @@ export default function DaySheet({
               )}
             </div>
         </motion.div>
-      </>
+        </>
+      )}
     </AnimatePresence>
   )
 }

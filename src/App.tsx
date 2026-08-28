@@ -211,15 +211,14 @@ export default function App() {
         )}
       </div>
 
-      {selectedDate && (
-        <DaySheet
-          date={selectedDate}
-          events={dayEvents}
-          onClose={() => setSelectedDate(null)}
-          onAdd={() => openAddForDate(selectedDate)}
-          onEdit={openEdit}
-        />
-      )}
+      <DaySheet
+        open={!!selectedDate}
+        date={selectedDate || dayjs()}
+        events={dayEvents}
+        onClose={() => setSelectedDate(null)}
+        onAdd={() => selectedDate && openAddForDate(selectedDate)}
+        onEdit={openEdit}
+      />
 
       <button className="fab" onClick={openAdd} aria-label={t('add')}>
         <Plus size={26} weight="bold" />
