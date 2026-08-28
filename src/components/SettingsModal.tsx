@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { Users, X } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { usePrefs } from '../context/PreferencesContext'
 import { useAuth } from '../context/AuthContext'
@@ -54,9 +55,7 @@ export default function SettingsModal({
               <div className="modal-head">
                 <div className="modal-title">{t('settingsTitle')}</div>
                 <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
+                  <X size={20} />
                 </button>
               </div>
 
@@ -118,7 +117,7 @@ export default function SettingsModal({
                     {isAdmin && (
                       <div style={{ padding: '0 10px 12px' }}>
                         <button className="btn btn-ghost btn-block" onClick={onManageMembers}>
-                          👥 {t('manageMembers')}
+                          <Users size={18} /> {t('manageMembers')}
                         </button>
                       </div>
                     )}

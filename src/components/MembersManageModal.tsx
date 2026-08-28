@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { X } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { fetchAllProfiles, adminUpdateMember } from '../lib/data'
 import { useAuth } from '../context/AuthContext'
@@ -75,9 +76,7 @@ export default function MembersManageModal({ open, onClose }: { open: boolean; o
                   </div>
                 </div>
                 <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
+                  <X size={20} />
                 </button>
               </div>
 

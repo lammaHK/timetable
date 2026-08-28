@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { X, Trash } from '@phosphor-icons/react'
 import type { Dayjs } from 'dayjs'
 import { useI18n } from '../lib/i18n'
 import VisibilityPicker from './VisibilityPicker'
@@ -74,9 +75,7 @@ export default function EventEditor({ open, date, event, defaultVisibility, onCl
                   )}
                 </div>
                 <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
+                  <X size={20} />
                 </button>
               </div>
 
@@ -125,9 +124,7 @@ export default function EventEditor({ open, date, event, defaultVisibility, onCl
               <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                 {isEdit && onDelete && (
                   <button className="btn btn-danger" onClick={() => onDelete(event!.id)} style={{ flex: 0 }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                    </svg>
+                    <Trash size={18} />
                   </button>
                 )}
                 <button className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>

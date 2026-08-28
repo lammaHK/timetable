@@ -720,6 +720,17 @@ html[data-theme='dark'] .seg-item.active {
   margin-bottom: 14px;
 }
 
+.banner-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .spin {
   width: 22px;
   height: 22px;

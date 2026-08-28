@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import dayjs, { Dayjs } from 'dayjs'
 import { motion } from 'framer-motion'
+import { GearSix, SignIn } from '@phosphor-icons/react'
 import { useAuth } from './context/AuthContext'
 import { usePrefs } from './context/PreferencesContext'
 import { useI18n } from './lib/i18n'
@@ -122,7 +123,9 @@ export default function App() {
 
         {!isBackendConfigured ? (
           <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-            <div style={{ fontSize: 34, marginBottom: 12 }}>⚙️</div>
+            <div className="empty-icon">
+              <GearSix size={34} weight="thin" />
+            </div>
             <div style={{ fontWeight: 800, fontSize: 18 }}>{t('notConfigured')}</div>
             <div style={{ color: 'var(--text-dim)', fontSize: 14, marginTop: 6 }}>{t('notConfiguredHint')}</div>
           </div>
@@ -142,7 +145,9 @@ export default function App() {
         {!user && isBackendConfigured && (
           <motion.div style={{ marginTop: 14 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="banner">
-              <span style={{ fontSize: 18 }}>👋</span>
+              <div className="banner-icon">
+                <SignIn size={18} weight="duotone" />
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 13 }}>{t('guestBanner')}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{t('signInToEdit')}</div>

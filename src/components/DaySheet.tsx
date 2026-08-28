@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Dayjs } from 'dayjs'
+import { X, CalendarBlank } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import { VisibilityBadge } from './VisibilityPicker'
@@ -47,16 +48,16 @@ export default function DaySheet({
         <div className="sheet-head">
           <div className="month-title" style={{ fontSize: 19 }}>{dateLabel}</div>
           <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <X size={20} />
           </button>
         </div>
 
         <div className="sheet-body">
           {!user && (
             <div className="banner">
-              <span style={{ fontSize: 18 }}>👋</span>
+              <div className="banner-icon">
+                <CalendarBlank size={18} weight="duotone" />
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 13 }}>{t('guestBanner')}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{t('signInToEdit')}</div>
@@ -69,7 +70,9 @@ export default function DaySheet({
 
           {sorted.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">🗓️</div>
+              <div className="empty-icon">
+                <CalendarBlank size={34} weight="thin" />
+              </div>
               <div style={{ fontWeight: 700 }}>{t('noEvents')}</div>
               <div style={{ fontSize: 13, marginTop: 4 }}>{t('noEventsHint')}</div>
             </div>
@@ -86,7 +89,7 @@ export default function DaySheet({
                     <div className="event-time">
                       {e.all_day
                         ? t('allDay')
-                        : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' – ' + formatTime(e.end_time) : ''}`}
+                        : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`}
                     </div>
                     <div className="event-title">{e.title}</div>
                     {e.note && <div className="event-note">{e.note}</div>}

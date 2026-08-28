@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import type { Dayjs } from 'dayjs'
 import { getMonthGrid, WEEKDAYS } from '../lib/dates'
 import { useI18n, monthNames } from '../lib/i18n'
@@ -62,14 +63,10 @@ export default function MonthCalendar({
         </button>
         <div className="month-nav-btns">
           <button className="nav-round" onClick={onPrev} aria-label="prev">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
+            <CaretLeft size={20} />
           </button>
           <button className="nav-round" onClick={onNext} aria-label="next">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
+            <CaretRight size={20} />
           </button>
         </div>
       </div>
