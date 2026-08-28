@@ -187,7 +187,6 @@ export default function App() {
               events={events}
               selectedDate={selectedDate}
               onSelectDay={handleSelectDay}
-              weekStartsOn="mon"
               presetColors={presetColors}
             />
             <TodaySection today={dayjs()} events={events} onOpenDay={handleSelectDay} />

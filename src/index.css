@@ -254,6 +254,12 @@ select {
   color: var(--text-faint);
   letter-spacing: 0.4px;
 }
+.weekday.wk-sun {
+  color: var(--danger);
+}
+.weekday.wk-sat {
+  color: var(--accent-strong);
+}
 
 .cal-grid {
   display: grid;
@@ -370,8 +376,8 @@ select {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 7px;
-  gap: 3px;
+  padding-top: 6px;
+  gap: 1px;
   position: relative;
   transition: background 0.18s var(--ease), transform 0.15s var(--ease);
 }
@@ -389,24 +395,38 @@ select {
 .day-cell:active {
   transform: scale(0.94);
 }
+/* weekend tint */
+.day-cell.wk-end.in-month {
+  background: var(--wk-bg, var(--surface-2));
+}
+.day-cell.w0-sun .day-num {
+  color: var(--danger);
+}
+.day-cell.w6-sat .day-num {
+  color: var(--accent-strong);
+}
+.day-cell.w0-sun.today:not(.selected) .day-num,
+.day-cell.w6-sat.in-month.today:not(.selected) .day-num {
+  color: var(--accent);
+}
 
 .day-num {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   width: 30px;
   height: 30px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   line-height: 1;
-  transition: background 0.18s var(--ease), box-shadow 0.18s var(--ease);
+  transition: background 0.18s var(--ease), box-shadow 0.18s var(--ease), color 0.18s var(--ease);
 }
 
-/* Selected date: solid accent fill — the primary state */
+/* Selected date: solid accent fill — the primary state, with a soft pulse */
 .day-cell.selected .day-num {
   background: var(--accent);
   color: var(--accent-contrast);
-  box-shadow: 0 2px 8px var(--accent-ring);
+  box-shadow: 0 2px 10px var(--accent-ring);
 }
 /* Today: outlined accent ring — a secondary marker that stays visible under selection */
 .day-cell.today:not(.selected) .day-num {
@@ -423,6 +443,35 @@ select {
   height: 5px;
   border-radius: 50%;
   background: var(--accent);
+}
+
+/* lunar day + festival marker under the date number */
+.day-lunar {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+}
+.day-lunar.on {
+  color: var(--accent-contrast);
+}
+.day-lunar .day-marker {
+  font-style: normal;
+  font-weight: 800;
+  font-size: 9px;
+  color: var(--danger);
+}
+.day-lunar.on .day-marker {
+  color: var(--accent-contrast);
+}
+/* festival/holiday dates get a tinted dot under lunar */
+.day-cell.holiday .day-lunar {
+  color: var(--danger);
 }
 .vis-count {
   font-size: 9px;
@@ -515,7 +564,7 @@ select {
   z-index: 50;
   margin: 0 auto;
   max-width: 720px;
-  background: var(--bg);
+  background: var(--sheet-bg, var(--surface));
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: var(--shadow-l);
   max-height: 86vh;
@@ -523,6 +572,7 @@ select {
   flex-direction: column;
   overflow: hidden;
   transition: height 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  /* darker sheet subtly distinct from page background in dark mode */
 }
 .sheet-grab {
   width: 44px;
@@ -530,11 +580,19 @@ select {
   border-radius: 2px;
   background: var(--border-strong);
   margin: 10px auto 4px;
-  cursor: pointer;
+  cursor: grab;
   transition: background 0.2s;
 }
 .sheet-grab:hover {
   background: var(--text-faint);
+}
+.sheet-drag {
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+}
+.sheet-drag:active {
+  cursor: grabbing;
 }
 .sheet-head {
   display: flex;
@@ -548,6 +606,8 @@ select {
   font-weight: 800;
 }
 .sheet-body {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
@@ -772,6 +832,52 @@ select {
 /* Editor form: tight, inline-placeholder layout, no dividers except the actions bar */
 .editor-field {
   margin-bottom: 14px;
+}
+
+/* Date banner in the event editor */
+.date-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+}
+.date-banner.has-mark {
+  background: linear-gradient(135deg, var(--danger-soft), var(--surface-2));
+}
+.date-banner-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.date-banner-day {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent-strong);
+}
+.date-banner.has-mark .date-banner-day {
+  color: var(--danger);
+}
+.date-banner-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.date-banner-week {
+  font-size: 13px;
+  font-weight: 700;
+}
+.date-banner-lunar {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.date-banner-long {
+  font-size: 12px;
+  color: var(--text-faint);
 }
 .editor-title {
   font-size: 17px;

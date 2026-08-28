@@ -2,9 +2,13 @@ import { useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import type { Dayjs } from 'dayjs'
-import { getMonthGrid, WEEKDAYS } from '../lib/dates'
+import { getMonthGrid } from '../lib/dates'
 import { useI18n, monthNames } from '../lib/i18n'
+import { getDateInfo } from '../lib/cn'
 import type { AppEvent } from '../lib/types'
+
+// Fixed Sun→Sat column order
+const WEEKDAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
 export default function MonthCalendar({
   viewDate,
@@ -14,7 +18,6 @@ export default function MonthCalendar({
   events,
   selectedDate,
   onSelectDay,
-  weekStartsOn,
   presetColors = {},
 }: {
   viewDate: Dayjs
@@ -24,14 +27,14 @@ export default function MonthCalendar({
   events: AppEvent[]
   selectedDate: Dayjs | null
   onSelectDay: (d: Dayjs) => void
-  weekStartsOn: 'mon' | 'sun'
   presetColors?: Record<string, string>
 }) {
   const { t, lang } = useI18n()
 
+  // grid always Sunday-first
   const grid = useMemo(
-    () => getMonthGrid(viewDate.year(), viewDate.month(), weekStartsOn),
-    [viewDate, weekStartsOn],
+    () => getMonthGrid(viewDate.year(), viewDate.month(), 'sun'),
+    [viewDate],
   )
 
   const eventsByDate = useMemo(() => {
@@ -43,12 +46,6 @@ export default function MonthCalendar({
     }
     return map
   }, [events])
-
-  // Weekday header order depends on weekStartsOn
-  const weekdayOrder = useMemo(() => {
-    if (weekStartsOn === 'sun') return ['sun', ...WEEKDAYS.slice(0, 6)]
-    return WEEKDAYS
-  }, [weekStartsOn])
 
   const todayStr = new Date().toISOString().slice(0, 10)
 
@@ -74,8 +71,8 @@ export default function MonthCalendar({
       </div>
 
       <div className="weekdays">
-        {weekdayOrder.map((w) => (
-          <div key={w} className="weekday">
+        {WEEKDAY_KEYS.map((w, i) => (
+          <div key={w} className={`weekday ${i === 0 ? 'wk-sun' : i === 6 ? 'wk-sat' : ''}`}>
             {t(('weekday_' + w) as never)}
           </div>
         ))}
@@ -94,18 +91,28 @@ export default function MonthCalendar({
             const iso = cell.date.format('YYYY-MM-DD')
             const isToday = iso === todayStr
             const isSelected = selectedDate?.format('YYYY-MM-DD') === iso
+            const wd = cell.date.day() // 0=Sun
+            const isWeekend = wd === 0 || wd === 6
             const dayEvents = eventsByDate.get(iso)
-            const dots = Math.min(dayEvents?.length ?? 0, 4)
+            const dots = Math.min(dayEvents?.length ?? 0, 3)
             const presetColor = presetColors[iso]
+            const cn = getDateInfo(iso)
+            const marker = cn.holiday || cn.festival
+
             return (
               <motion.button
                 key={iso}
-                className={`day-cell ${cell.inMonth ? 'in-month' : 'out-month'} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
+                className={`day-cell in-month ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${isWeekend ? 'wk-end' : ''} ${marker ? 'holiday' : ''} ${itemClass(wd)}`}
                 onClick={() => onSelectDay(cell.date)}
-                whileTap={{ scale: 0.94 }}
+                whileTap={{ scale: 0.92 }}
+                animate={isSelected ? { scale: [1, 1.12, 1] } : { scale: 1 }}
+                transition={isSelected ? { duration: 0.4, times: [0, 0.5, 1] } : undefined}
                 aria-label={iso}
               >
                 <span className="day-num">{cell.date.date()}</span>
+                <span className={`day-lunar ${isSelected ? 'on' : ''}`}>
+                  {marker ? <em className="day-marker">{marker}</em> : cn.lunarDay}
+                </span>
                 <span className="day-dots">
                   {Array.from({ length: dots }).map((_, i) => (
                     <span key={i} className="day-dot" style={presetColor ? { background: presetColor } : undefined} />
@@ -118,4 +125,10 @@ export default function MonthCalendar({
       </AnimatePresence>
     </motion.div>
   )
+}
+
+function itemClass(wd: number): string {
+  if (wd === 0) return 'w0-sun'
+  if (wd === 6) return 'w6-sat'
+  return ''
 }

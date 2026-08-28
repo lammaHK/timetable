@@ -16,8 +16,12 @@ export default function TodaySection({
   events: AppEvent[]
   onOpenDay: (d: Dayjs) => void
 }) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const { user } = useAuth()
+  const WEEK_ZH = ['日', '一', '二', '三', '四', '五', '六']
+  const WEEK_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const weekdayLabel = (d: Dayjs) =>
+    lang === 'zh' ? `週${WEEK_ZH[d.day()]}` : WEEK_EN[d.day()]
 
   const todayStr = today.format('YYYY-MM-DD')
   // events already filtered by RLS; just grab today's
@@ -38,7 +42,9 @@ export default function TodaySection({
         <span className="today-head-icon">
           <CalendarCheck size={18} weight="duotone" />
         </span>
-        <span className="today-title">{t('todaySchedule')}</span>
+        <span className="today-title">
+          {today.format('M/D')} · {weekdayLabel(today)}
+        </span>
         <span className="today-count">{sorted.length}</span>
         <svg className="today-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 6l6 6-6 6" />

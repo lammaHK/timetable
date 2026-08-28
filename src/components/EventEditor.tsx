@@ -6,6 +6,7 @@ import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import VisibilityPicker from './VisibilityPicker'
 import { fetchActiveMembers, fetchParticipantIds, fetchVisibilityMemberIds, listRevisions } from '../lib/data'
+import { getDateInfo } from '../lib/cn'
 import type { AppEvent, EventPreset, EventRevision, Visibility } from '../lib/types'
 
 interface MemberOption {
@@ -243,6 +244,8 @@ export default function EventEditor({
                 </button>
               </div>
 
+              {date && <EventDateBanner iso={date.format('YYYY-MM-DD')} />}
+
               {showPresets && (
                 <div className="preset-block">
                   <div className="preset-label">
@@ -361,5 +364,30 @@ export default function EventEditor({
         </>
       )}
     </AnimatePresence>
+  )
+}
+
+/** 日期橫幅：星期 + 農曆 + 節日/假期，讓新增視窗有視覺焦點。 */
+function EventDateBanner({ iso }: { iso: string }) {
+  const { lang } = useI18n()
+  const info = getDateInfo(iso)
+  const [y, m, d] = iso.split('-').map(Number)
+  const WEEK_EN_S = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const date = new Date(y, m - 1, d)
+  const wd = date.getDay()
+  const weekday = lang === 'zh' ? `週${['日', '一', '二', '三', '四', '五', '六'][wd]}` : WEEK_EN_S[wd]
+  const long = lang === 'zh' ? `${m}月${d}日` : `${m}/${d}`
+
+  return (
+    <div className={`date-banner ${info.holiday ? 'has-mark' : ''}`}>
+      <div className="date-banner-main">
+        <span className="date-banner-day">{d}</span>
+        <span className="date-banner-side">
+          <span className="date-banner-week">{weekday}</span>
+          <span className="date-banner-lunar">{info.holiday || info.festival || info.lunarFull}</span>
+        </span>
+      </div>
+      <span className="date-banner-long">{lang === 'zh' ? `${long} · 農曆${info.lunarFull}` : info.lunarFull}</span>
+    </div>
   )
 }
