@@ -1013,6 +1013,14 @@ select {
   font-size: 18px;
   font-weight: 800;
 }
+.modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal-title-row .modal-title {
+  flex: 1;
+}
 
 /* ===== Event editor: presets + segmented layout ===== */
 .preset-block {

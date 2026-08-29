@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Users, X } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { Users, X, Check } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { usePrefs } from '../context/PreferencesContext'
 import { useAuth } from '../context/AuthContext'
@@ -44,6 +45,11 @@ export default function SettingsModal({
   const displayName = (user?.user_metadata?.username as string) || user?.user_metadata?.full_name || (user?.email && !user.email.endsWith('@timetable.local') ? user.email.split('@')[0] : '') || ''
   const avatarChar = displayName?.[0]?.toUpperCase() || '?'
   const showRawEmail = user?.email && !user.email.endsWith('@timetable.local')
+  const [avColor, setAvColor] = useState<string | null>((user?.user_metadata?.avatar_color as string) || null)
+  const pickColor = async (c: string) => {
+    setAvColor(c)
+    await setAvatarColor(c)
+  }
 
   return (
     <AnimatePresence>
@@ -112,7 +118,7 @@ export default function SettingsModal({
                 {user ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
-                      <div className="avatar" style={{ width: 44, height: 44, fontSize: 18 }}>
+                      <div className="avatar" style={{ width: 44, height: 44, fontSize: 18, background: avColor || undefined }}>
                         {avatarChar}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -134,11 +140,13 @@ export default function SettingsModal({
                           <button
                             key={c}
                             type="button"
-                            className="color-swatch"
+                            className={`color-swatch ${avColor === c ? 'active' : ''}`}
                             style={{ background: c }}
-                            onClick={() => setAvatarColor(c)}
+                            onClick={() => pickColor(c)}
                             aria-label={c}
-                          />
+                          >
+                            {avColor === c && <Check size={14} weight="bold" />}
+                          </button>
                         ))}
                       </div>
                     </div>

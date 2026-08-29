@@ -48,7 +48,10 @@ export default function EventDetailSheet({
               exit={{ y: 28, opacity: 0, scale: 0.985, transition: { duration: 0.22, ease: 'easeOut' } }}
             >
               <div className="modal-head">
-                <div className="modal-title">{event.title}</div>
+                <div className="modal-title-row">
+                  <div className="modal-title">{event.title}</div>
+                  <VisibilityBadge v={event.visibility} />
+                </div>
                 <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
                   <X size={20} />
                 </button>
