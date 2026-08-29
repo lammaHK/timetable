@@ -4,7 +4,6 @@ import { CalendarCheck, Plus } from '@phosphor-icons/react'
 import type { Dayjs } from 'dayjs'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
-import { VisibilityBadge } from './VisibilityPicker'
 import { getDateInfo } from '../lib/cn'
 import { fetchEventsParticipants } from '../lib/data'
 import { formatTime } from '../lib/dates'
@@ -88,7 +87,6 @@ export default function DayCard({
               {parts.length > 3 && <span className="today-avatar-more">+{parts.length - 3}</span>}
             </div>
           )}
-          <VisibilityBadge v={e.visibility} />
         </div>
       </button>
     )

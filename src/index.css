@@ -774,6 +774,60 @@ select {
   color: var(--accent);
 }
 
+/* owner + participants per event row */
+.event-people {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.evperson {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.evperson-av {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  border: 2px solid var(--surface);
+}
+.owner-av {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: var(--accent-contrast);
+}
+.evperson-tag {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 1px 5px;
+  border-radius: 999px;
+}
+.evperson-list {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+.part-av {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+  margin-left: -7px;
+}
+.part-av:first-child {
+  margin-left: 0;
+}
+.evperson-more {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-faint);
+}
+
 /* Event detail sheet */
 .detail-time {
   display: flex;

@@ -5,7 +5,6 @@ import type { Dayjs } from 'dayjs'
 import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
-import { VisibilityBadge } from './VisibilityPicker'
 import { fetchEventsParticipants } from '../lib/data'
 import { formatTime } from '../lib/dates'
 import { getDateInfo } from '../lib/cn'
@@ -174,7 +173,6 @@ export default function DaySheet({
               ) : (
                 <div className="events-list">
                   {sorted.map((e) => {
-                    const mine = user && e.owner_id === user.id
                     return (
                       <div key={e.id} className="event-row pressable" onClick={() => onEdit(e)}>
                         <div className="event-time">
@@ -182,13 +180,19 @@ export default function DaySheet({
                         </div>
                         <div className={`event-title vis-title-${e.visibility}`}>{e.title}</div>
                         {e.note && <div className="event-note">{e.note}</div>}
-                        <div className="event-meta">
-                          <VisibilityBadge v={e.visibility} />
-                          <span className="event-time-inline">{e.all_day ? t('allDay') : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`}</span>
+                        <div className="event-people">
+                          <span className="evperson owner" title={e.owner_name || t('owner')}>
+                            <span className="evperson-av owner-av">{(e.owner_name || t('owner'))[0]?.toUpperCase()}</span>
+                            <span className="evperson-tag">{t('owner')}</span>
+                          </span>
                           {partByEvent[e.id] && partByEvent[e.id].length > 0 && (
-                            <span className="event-owner">· {partByEvent[e.id].join(', ')}</span>
+                            <span className="evperson-list" title={partByEvent[e.id].join(', ')}>
+                              {partByEvent[e.id].slice(0, 3).map((nm, i) => (
+                                <span key={i} className="evperson-av part-av" title={nm}>{nm[0]?.toUpperCase()}</span>
+                              ))}
+                              {partByEvent[e.id].length > 3 && <span className="evperson-more">+{partByEvent[e.id].length - 3}</span>}
+                            </span>
                           )}
-                          {!mine && e.owner_name && <span className="event-owner">· {e.owner_name}</span>}
                         </div>
                       </div>
                     )
