@@ -120,7 +120,7 @@ export default function MonthCalendar({
                 transition={isSelected ? { duration: 0.4, times: [0, 0.5, 1] } : undefined}
                 aria-label={iso}
               >
-                <span className="day-num">{cell.date.date()}</span>
+                <span className="day-num" style={presetColor ? { background: presetColor, color: '#fff', boxShadow: `0 2px 8px ${presetColor}55` } : undefined}>{cell.date.date()}</span>
                                 {marker && <span className="holiday-dot" aria-label={marker} />}
                 <span className="day-dots">
                   {Array.from({ length: dots }).map((_, i) => (

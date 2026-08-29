@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion'
 import { CalendarCheck, Plus } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
 import type { Dayjs } from 'dayjs'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import { VisibilityBadge } from './VisibilityPicker'
 import { getDateInfo } from '../lib/cn'
+import { fetchEventsParticipants } from '../lib/data'
 import { formatTime } from '../lib/dates'
 import type { AppEvent } from '../lib/types'
 
@@ -36,6 +38,14 @@ export default function DayCard({
     return (a.start_time || '99').localeCompare(b.start_time || '99')
   })
   const title = `${lang === 'zh' ? monthZh[date.month()] : monthEn[date.month()]} ${date.date()} · ${weekdayLabel(date)}`
+
+  // participant names per event (for avatars)
+  const [partByEvent, setPartByEvent] = useState<Record<string, string[]>>({})
+  useEffect(() => {
+    const ids = events.filter((e) => e.date === dateStr).map((e) => e.id)
+    fetchEventsParticipants(ids).then((m) => setPartByEvent(m))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateStr, events.length])
 
   return (
     <motion.div
@@ -72,15 +82,31 @@ export default function DayCard({
         </div>
       ) : (
         <div className="today-list">
-          {sorted.slice(0, 4).map((e) => (
-            <button key={e.id} className="today-row pressable" onClick={() => onOpenDay(date)}>
-              <div className="today-row-time">
-                {e.all_day ? t('allDay') : formatTime(e.start_time) || '--'}
-              </div>
-              <div className="today-row-title">{e.title}</div>
-              <VisibilityBadge v={e.visibility} />
-            </button>
-          ))}
+          {sorted.slice(0, 4).map((e) => {
+            const parts = partByEvent[e.id] || []
+            const timeLabel = e.all_day
+              ? t('allDay')
+              : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`
+            return (
+              <button key={e.id} className="today-row pressable" onClick={() => onOpenDay(date)}>
+                <div className="today-row-main">
+                  <div className="today-row-title">{e.title}</div>
+                  <div className="today-row-time">{timeLabel}</div>
+                </div>
+                <div className="today-row-right">
+                  {parts.length > 0 && (
+                    <div className="today-avatars">
+                      {parts.slice(0, 3).map((nm, i) => (
+                        <span key={i} className="today-avatar" title={nm}>{nm[0]?.toUpperCase()}</span>
+                      ))}
+                      {parts.length > 3 && <span className="today-avatar-more">+{parts.length - 3}</span>}
+                    </div>
+                  )}
+                  <VisibilityBadge v={e.visibility} />
+                </div>
+              </button>
+            )
+          })}
           {sorted.length > 4 && (
             <div className="today-more">{t('moreEvents')}</div>
           )}

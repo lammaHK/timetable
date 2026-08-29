@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, Plus, Trash, Check } from '@phosphor-icons/react'
+import { X, Trash, Check, PencilSimple } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { fetchPresets, upsertPreset, deletePreset } from '../lib/data'
 import VisibilityPicker from './VisibilityPicker'
@@ -14,6 +14,7 @@ export default function PresetsManageModal({ open, onClose, onSaved }: { open: b
   const [editing, setEditing] = useState<EventPreset | null>(null)
   const [title, setTitle] = useState('')
   const [startTime, setStartTime] = useState('')
+  const [endTime, setEndTime] = useState('')
   const [allDay, setAllDay] = useState(false)
   const [visibility, setVisibility] = useState<Visibility>('members')
   const [color, setColor] = useState<string | null>(null)
@@ -34,6 +35,7 @@ export default function PresetsManageModal({ open, onClose, onSaved }: { open: b
   const resetForm = () => {
     setTitle('')
     setStartTime('')
+    setEndTime('')
     setAllDay(false)
     setVisibility('members')
     setColor(null)
@@ -43,6 +45,7 @@ export default function PresetsManageModal({ open, onClose, onSaved }: { open: b
     setEditing(p)
     setTitle(p.title)
     setStartTime(p.start_time ? p.start_time.slice(0, 5) : '')
+    setEndTime(p.end_time ? p.end_time.slice(0, 5) : '')
     setAllDay(p.all_day)
     setVisibility(p.visibility)
     setColor(p.color)
@@ -55,12 +58,13 @@ export default function PresetsManageModal({ open, onClose, onSaved }: { open: b
 
   const save = async () => {
     if (!title.trim()) return
+    if (!allDay && (!!startTime !== !!endTime)) return
     setBusy(true)
     await upsertPreset({
       id: editing?.id,
       title: title.trim(),
       start_time: allDay || !startTime ? null : startTime,
-      end_time: null,
+      end_time: allDay || !endTime ? null : endTime,
       all_day: allDay,
       visibility,
       color,
@@ -124,8 +128,20 @@ export default function PresetsManageModal({ open, onClose, onSaved }: { open: b
                     <button type="button" className={`switch ${allDay ? 'on' : ''}`} onClick={() => setAllDay((v) => !v)} aria-pressed={allDay} />
                   </label>
                   {!allDay && (
-                    <input type="time" className="time-input" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-                  )}
+                  <div className="field" style={{ marginBottom: 10 }}>
+                    <div className="time-row">
+                      <div className="time-col">
+                        <div className="field-label">{t('startTime')}</div>
+                        <input type="time" className="time-input" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+                      </div>
+                      <div className="time-sep">—</div>
+                      <div className="time-col">
+                        <div className="field-label">{t('endTime')}</div>
+                        <input type="time" className="time-input" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 </div>
                 <div className="field" style={{ marginBottom: 10 }}>
                   <div className="field-label">{t('visibility')}</div>
@@ -171,7 +187,7 @@ export default function PresetsManageModal({ open, onClose, onSaved }: { open: b
                     <span className="preset-chip-dot" style={p.color ? { background: p.color } : undefined} />
                     <span style={{ flex: 1, fontWeight: 700, fontSize: 14 }}>{p.title}</span>
                     <button className="icon-btn" onClick={() => startEdit(p)} aria-label={t('edit')}>
-                      <Plus size={18} />
+                      <PencilSimple size={18} />
                     </button>
                     <button className="icon-btn" onClick={() => remove(p.id)} aria-label={t('delete')} style={{ color: 'var(--danger)' }}>
                       <Trash size={18} />
