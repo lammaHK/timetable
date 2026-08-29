@@ -767,6 +767,16 @@ select {
   font-weight: 700;
   margin-top: 2px;
 }
+.event-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.event-title-row .event-title {
+  margin-top: 0;
+  flex: 1;
+}
 .event-note {
   font-size: 13px;
   color: var(--text-dim);

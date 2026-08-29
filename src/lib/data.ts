@@ -265,13 +265,23 @@ export async function listRevisions(eventId: string): Promise<EventRevision[]> {
 }
 
 /** Basic list of other active members, for picking participants / specific-visibility targets. */
-export async function fetchActiveMembers(): Promise<{ id: string; email: string; full_name: string }[]> {
+export async function fetchActiveMembers(): Promise<{ id: string; email: string; full_name: string; avatar_color: string | null }[]> {
   const { data, error } = await supabase.rpc('list_active_members')
   if (error) {
     console.error('fetchActiveMembers', error)
     return []
   }
-  return (data ?? []) as { id: string; email: string; full_name: string }[]
+  return (data ?? []) as { id: string; email: string; full_name: string; avatar_color: string | null }[]
+}
+
+/** Set current user's avatar color. */
+export async function setAvatarColor(color: string): Promise<boolean> {
+  const { error } = await supabase.rpc('set_avatar_color', { p_color: color })
+  if (error) {
+    console.error('setAvatarColor', error)
+    return false
+  }
+  return true
 }
 
 /** Minimal display name for the user (used as owner_name on inserts). */

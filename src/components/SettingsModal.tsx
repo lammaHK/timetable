@@ -3,8 +3,11 @@ import { Users, X } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { usePrefs } from '../context/PreferencesContext'
 import { useAuth } from '../context/AuthContext'
+import { setAvatarColor } from '../lib/data'
 import VisibilityPicker from './VisibilityPicker'
 import type { Visibility } from '../lib/types'
+
+const AVATAR_COLORS = ['#2fd6bd', '#4a7de0', '#e07b39', '#ff6b81', '#b48fff', '#e0c341', '#7aa87f', '#82868f']
 
 function OptionPills<T extends string>({
   options,
@@ -123,6 +126,21 @@ export default function SettingsModal({
                       <button className="btn btn-danger btn-sm" onClick={() => signOut()}>
                         {t('signOut')}
                       </button>
+                    </div>
+                    <div style={{ padding: '0 16px 14px' }}>
+                      <div className="field-label">{t('avatarColor')}</div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {AVATAR_COLORS.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            className="color-swatch"
+                            style={{ background: c }}
+                            onClick={() => setAvatarColor(c)}
+                            aria-label={c}
+                          />
+                        ))}
+                      </div>
                     </div>
                     {isAdmin && (
                       <div style={{ padding: '0 10px 12px' }}>

@@ -5,13 +5,13 @@ import type { Dayjs } from 'dayjs'
 import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
+import { VisibilityBadge } from './VisibilityPicker'
 import { fetchEventsParticipants } from '../lib/data'
 import { formatTime } from '../lib/dates'
 import { getDateInfo } from '../lib/cn'
 import type { AppEvent } from '../lib/types'
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const MONTH_SHORT_ZH = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
 const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WD_ZH = ['週日', '週一', '週二', '週三', '週四', '週五', '週六']
 
@@ -35,7 +35,9 @@ export default function DaySheet({
   const { t, lang } = useI18n()
   const { user } = useAuth()
   const isZh = lang === 'zh'
-  const dateLabel = `${isZh ? MONTH_SHORT_ZH[date.month()] : MONTH_SHORT[date.month()]} ${date.date()} · ${isZh ? WD_ZH[date.day()] : WD[date.day()]}`
+  const dateLabel = isZh
+    ? `${date.month() + 1} 月 ${date.date()} 日（${WD_ZH[date.day()]}）`
+    : `${MONTH_SHORT[date.month()]} ${date.date()} (${WD[date.day()]})`
   const cn = getDateInfo(date.format('YYYY-MM-DD'))
   const holidayLabel = cn.holiday || cn.festival
   const sorted = [...events].sort((a, b) => {
@@ -130,11 +132,6 @@ export default function DaySheet({
                   {holidayLabel && <div className="sheet-holiday">{holidayLabel}</div>}
                 </div>
                 <div className="sheet-head-actions">
-                  {user && (
-                    <button className="btn btn-primary btn-sm" onClick={onAdd}>
-                      <Plus size={15} weight="bold" /> {t('addEvent')}
-                    </button>
-                  )}
                   <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
                     <X size={20} />
                   </button>
@@ -178,7 +175,10 @@ export default function DaySheet({
                         <div className="event-time">
                           {e.all_day ? t('allDay') : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`}
                         </div>
-                        <div className={`event-title vis-title-${e.visibility}`}>{e.title}</div>
+                        <div className="event-title-row">
+                          <div className={`event-title vis-title-${e.visibility}`}>{e.title}</div>
+                          <VisibilityBadge v={e.visibility} />
+                        </div>
                         {e.note && <div className="event-note">{e.note}</div>}
                         <div className="event-people">
                           <span className="evperson owner" title={e.owner_name || t('owner')}>
