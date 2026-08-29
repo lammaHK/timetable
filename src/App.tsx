@@ -173,12 +173,16 @@ export default function App() {
     ? events.filter((e) => e.date === sheetDate.format('YYYY-MM-DD'))
     : []
 
-  // date -> color, for dates that have events created from a colored preset
-  const presetColorById = new Map(presets.filter((p) => p.color).map((p) => [p.id, p.color] as [string, string]))
+  // date -> color + preset name, for dates that have events created from a colored preset
+  const presetById = new Map(presets.map((p) => [p.id, p] as [string, EventPreset]))
   const presetColors: Record<string, string> = {}
+  const presetInfoByDate: Record<string, { color: string; name: string }> = {}
   for (const e of events) {
-    const c = e.preset_id ? presetColorById.get(e.preset_id) : undefined
-    if (c) presetColors[e.date] = c
+    const p = e.preset_id ? presetById.get(e.preset_id) : undefined
+    if (p && p.color) {
+      presetColors[e.date] = p.color
+      presetInfoByDate[e.date] = { color: p.color, name: p.title }
+    }
   }
 
   return (
@@ -206,7 +210,7 @@ export default function App() {
               onSelectDay={handleSelectDay}
               presetColors={presetColors}
             />
-            <TodaySection date={selectedDate} events={events} onOpenDay={(d) => setSheetDate(d)} onOpenEvent={(e) => setDetailEvent(e)} onAdd={(d) => openAddForDate(d)} />
+            <TodaySection date={selectedDate} events={events} presetInfo={presetInfoByDate[selectedDate.format('YYYY-MM-DD')]} onOpenDay={(d) => setSheetDate(d)} onOpenEvent={(e) => setDetailEvent(e)} onAdd={(d) => openAddForDate(d)} />
           </>
         )}
 

@@ -300,6 +300,21 @@ select {
   font-weight: 600;
   color: var(--text-faint);
 }
+.today-mark {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.today-mark-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--mk, var(--accent));
+}
 .today-head:hover {
   background: var(--hover);
 }

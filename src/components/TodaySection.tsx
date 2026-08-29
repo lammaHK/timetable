@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { motion } from 'framer-motion'
 import { CalendarCheck, Plus } from '@phosphor-icons/react'
 import type { Dayjs } from 'dayjs'
@@ -22,12 +23,14 @@ function slotOf(e: AppEvent): Slot {
 export default function DayCard({
   date,
   events,
+  presetInfo,
   onOpenDay,
   onOpenEvent,
   onAdd,
 }: {
   date: Dayjs
   events: AppEvent[]
+  presetInfo?: { color: string; name: string }
   onOpenDay: (d: Dayjs) => void
   onOpenEvent: (e: AppEvent) => void
   onAdd: (d: Dayjs) => void
@@ -37,7 +40,6 @@ export default function DayCard({
   const WEEK_ZH = ['日', '一', '二', '三', '四', '五', '六']
   const WEEK_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const weekdayLabel = (d: Dayjs) => (lang === 'zh' ? `週${WEEK_ZH[d.day()]}` : WEEK_EN[d.day()])
-  const monthZh = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
   const monthEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   const dateStr = date.format('YYYY-MM-DD')
@@ -48,7 +50,9 @@ export default function DayCard({
     if (a.all_day !== b.all_day) return a.all_day ? -1 : 1
     return (a.start_time || '99').localeCompare(b.start_time || '99')
   })
-  const title = `${lang === 'zh' ? monthZh[date.month()] : monthEn[date.month()]} ${date.date()} · ${weekdayLabel(date)}`
+  const title = lang === 'zh'
+    ? `${date.month() + 1} 月 ${date.date()} 日（${weekdayLabel(date)}）`
+    : `${monthEn[date.month()]} ${date.date()} (${weekdayLabel(date)})`
 
   // participant names per event (for avatars)
   const [partByEvent, setPartByEvent] = useState<Record<string, string[]>>({})
@@ -64,7 +68,14 @@ export default function DayCard({
     { key: 'afternoon', title: t('afternoon'), events: [] },
     { key: 'evening', title: t('evening'), events: [] },
   ]
-  for (const e of sorted) slots.find((s) => s.key === slotOf(e))!.events.push(e)
+  for (const e of sorted) {
+    if (e.all_day) {
+      // all-day events appear in every slot
+      for (const s of slots) s.events.push(e)
+    } else {
+      slots.find((s) => s.key === slotOf(e))!.events.push(e)
+    }
+  }
   const haveEvents = slots.some((s) => s.events.length > 0)
 
   const renderRow = (e: AppEvent) => {
@@ -119,6 +130,13 @@ export default function DayCard({
           </button>
         )}
       </div>
+
+      {presetInfo && (
+        <div className="today-mark" style={{ '--mk': presetInfo.color } as CSSProperties}>
+          <span className="today-mark-dot" />
+          <span>{presetInfo.name}</span>
+        </div>
+      )}
 
       {!haveEvents ? (
         <div className="today-empty">
