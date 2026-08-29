@@ -64,10 +64,6 @@ export default function EventDetailSheet({
 
               {event.note && <div className="detail-note">{event.note}</div>}
 
-              <div className="detail-meta">
-                <VisibilityBadge v={event.visibility} />
-              </div>
-
               {/* Owner with creator label */}
               <div className="detail-owner">
                 <div className="owner-row">
