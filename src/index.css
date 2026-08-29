@@ -416,13 +416,13 @@ select {
 .day-cell:active {
   transform: scale(0.94);
 }
-/* weekend: only the number is tinted, no background fill */
+/* weekend: same color as weekdays (no tint) */
+.day-cell.in-month .day-num,
 .day-cell.w0-sun .day-num,
 .day-cell.w6-sat .day-num {
-  color: var(--accent-strong);
+  color: var(--text);
 }
-.day-cell.w0-sun.today:not(.selected) .day-num,
-.day-cell.w6-sat.in-month.today:not(.selected) .day-num {
+.day-cell.today:not(.selected) .day-num {
   color: var(--accent);
 }
 
@@ -887,17 +887,21 @@ select {
 .time-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  justify-content: center;
 }
 .time-col {
-  flex: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.time-col .time-input {
   min-width: 0;
 }
 .time-sep {
   color: var(--text-faint);
   font-weight: 700;
   flex-shrink: 0;
-  padding: 0 1px;
+  padding: 0 2px;
 }
 .seg.seg-2 {
   grid-template-columns: repeat(2, 1fr);

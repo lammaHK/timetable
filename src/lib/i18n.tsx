@@ -47,6 +47,7 @@ const dict = {
     addEvent: 'New event',
     editEvent: 'Edit event',
     timeError: 'End time must be at least 1 minute after start time',
+    timePairError: 'Start and end time must both be set',
     notePlaceholder: 'Add a note (optional)',
     // visibility
     vis_private: 'Only me',
@@ -194,6 +195,7 @@ const dict = {
     addEvent: '新增事件',
     editEvent: '編輯事件',
     timeError: '結束時間須晚於開始至少 1 分鐘',
+    timePairError: '開始與結束時間必須同時設定',
     notePlaceholder: '備註（選填）',
     vis_private: '僅自己',
     vis_private_hint: '只有你自己看得到',

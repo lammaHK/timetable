@@ -131,17 +131,26 @@ export default function EventEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, event?.id, user?.id])
 
-  // End-time validation (req 6)
+  // Time validation: if timed, start REQUIRES end and end REQUIRES start; end must be after start.
   useEffect(() => {
-    if (!allDay && startTime && endTime) {
+    if (allDay) {
+      setTimeError(null)
+      return
+    }
+    if (!!startTime !== !!endTime) {
+      // one set, the other missing
+      setTimeError(t('timePairError'))
+      return
+    }
+    if (startTime && endTime) {
       const toMin = (s: string) => {
         const [h, m] = s.split(':').map(Number)
         return h * 60 + m
       }
       setTimeError(toMin(endTime) - toMin(startTime) < 1 ? t('timeError') : null)
-    } else {
-      setTimeError(null)
+      return
     }
+    setTimeError(null)
   }, [allDay, startTime, endTime, t])
 
   // Initialize fields whenever the modal opens (add or edit)
@@ -319,7 +328,8 @@ export default function EventEditor({
               {/* Title + all-day toggle on the first row */}
               <div className="editor-field title-row">
                 <input className="text-input editor-title" placeholder={t('title')} value={title} onChange={(e) => setTitle(e.target.value)} enterKeyHint="done" disabled={!editable} />
-                <div className="all-day-inline" title={t('allDay')}>
+                <div className="all-day-inline">
+                  <span className="all-day-label">{t('allDay')}</span>
                   <button type="button" className={`switch ${allDay ? 'on' : ''}`} onClick={() => setAllDay((v) => !v)} aria-pressed={allDay} disabled={!editable} />
                 </div>
               </div>
