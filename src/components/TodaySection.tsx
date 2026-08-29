@@ -76,7 +76,7 @@ export default function DayCard({
     return (
       <button key={e.id} className="today-row pressable" onClick={() => onOpenEvent(e)}>
         <div className="today-row-main">
-          <div className="today-row-title">{e.title}</div>
+          <div className={`today-row-title vis-title-${e.visibility}`}>{e.title}</div>
           <div className="today-row-time">{timeLabel}</div>
         </div>
         <div className="today-row-right">

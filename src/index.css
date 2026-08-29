@@ -630,6 +630,12 @@ select {
   background: var(--vis-public-soft);
 }
 
+/* Visibility shown via event title color */
+.vis-title-private { color: var(--vis-private); }
+.vis-title-members { color: var(--vis-members); }
+.vis-title-public { color: var(--vis-public); }
+.vis-title-specific { color: var(--vis-members); }
+
 /* ===== Day view / bottom sheet ===== */
 .scrim {
   position: fixed;
@@ -681,6 +687,11 @@ select {
   justify-content: space-between;
   padding: 6px 18px 4px;
   gap: 8px;
+}
+.sheet-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .sheet-holiday {
   font-size: 12px;

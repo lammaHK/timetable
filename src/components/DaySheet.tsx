@@ -130,9 +130,16 @@ export default function DaySheet({
                   <div className="month-title" style={{ fontSize: 19 }}>{dateLabel}</div>
                   {holidayLabel && <div className="sheet-holiday">{holidayLabel}</div>}
                 </div>
-                <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
-                  <X size={20} />
-                </button>
+                <div className="sheet-head-actions">
+                  {user && (
+                    <button className="btn btn-primary btn-sm" onClick={onAdd}>
+                      <Plus size={15} weight="bold" /> {t('addEvent')}
+                    </button>
+                  )}
+                  <button className="icon-btn" onClick={onClose} aria-label={t('close')}>
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -173,7 +180,7 @@ export default function DaySheet({
                         <div className="event-time">
                           {e.all_day ? t('allDay') : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`}
                         </div>
-                        <div className="event-title">{e.title}</div>
+                        <div className={`event-title vis-title-${e.visibility}`}>{e.title}</div>
                         {e.note && <div className="event-note">{e.note}</div>}
                         <div className="event-meta">
                           <VisibilityBadge v={e.visibility} />
