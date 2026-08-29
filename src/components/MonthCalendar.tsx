@@ -121,8 +121,7 @@ export default function MonthCalendar({
                 aria-label={iso}
               >
                 <span className="day-num">{cell.date.date()}</span>
-                <span className={`day-lunar ${isSelected ? 'on' : ''}`}>{cn.lunarDay}</span>
-                {marker && <span className="holiday-dot" aria-label={marker} />}
+                                {marker && <span className="holiday-dot" aria-label={marker} />}
                 <span className="day-dots">
                   {Array.from({ length: dots }).map((_, i) => (
                     <span key={i} className="day-dot" style={presetColor ? { background: presetColor } : undefined} />

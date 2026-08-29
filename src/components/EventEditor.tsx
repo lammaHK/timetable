@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, Trash, SquaresFour, ClockCounterClockwise } from '@phosphor-icons/react'
-import type { Dayjs } from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import VisibilityPicker from './VisibilityPicker'
@@ -72,6 +72,7 @@ interface EditorProps {
     preset_id?: string | null
     participantIds?: string[]
     visibilityMemberIds?: string[]
+    dates?: string[]
     revisionReason?: string | null
     prevSnapshot?: { title: string; start_time: string | null; end_time: string | null; all_day: boolean; note: string; visibility: Visibility } | null
   }) => void
@@ -111,6 +112,7 @@ export default function EventEditor({
   const [timeError, setTimeError] = useState<string | null>(null)
   const [partError, setPartError] = useState<string | null>(null)
   const [editMode, setEditMode] = useState<'normal' | 'forced'>('normal')
+  const [multiDates, setMultiDates] = useState<string[]>([])
 
   // Load member options + (when editing) participant/visibility ids + revisions.
   useEffect(() => {
@@ -154,6 +156,7 @@ export default function EventEditor({
       setPresetId(null)
       setRevisionReason('')
       setShowRevisions(false)
+      setMultiDates([])
       if (!event) {
         setRevisions([])
         setParticipantIds([])
@@ -192,6 +195,7 @@ export default function EventEditor({
         visibility,
         participantIds,
         visibilityMemberIds,
+        dates: undefined,
         // only forced changes carry a reason + full previous snapshot
         revisionReason: forced ? revisionReason.trim() : null,
         prevSnapshot: forced
@@ -217,6 +221,7 @@ export default function EventEditor({
         preset_id: presetId,
         participantIds,
         visibilityMemberIds,
+        dates: multiDates.length ? multiDates : undefined,
       })
     }
   }
@@ -256,6 +261,41 @@ export default function EventEditor({
               </div>
 
               {date && <EventDateBanner iso={date.format('YYYY-MM-DD')} />}
+
+              {!isEdit && (
+                <div className="editor-field">
+                  <div className="field-label">{t('multiDate')}</div>
+                  <div className="multi-toggle">
+                    <button type="button" className={`switch ${multiDates.length ? 'on' : ''}`} onClick={() => setMultiDates(multiDates.length ? [] : [date ? date.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD')])} aria-pressed={!!multiDates.length} />
+                    <span className="multi-hint">{t('multiDateHint')}</span>
+                  </div>
+                  {multiDates.length > 0 && (
+                    <div className="multi-picker">
+                      <div className="multi-label">{t('pickDates')}</div>
+                      <div className="multi-grid">
+                        {Array.from({ length: 14 }).map((_, i) => {
+                          const d = date ? date.subtract(2, 'day').add(i, 'day') : dayjs().add(i, 'day')
+                          const iso = d.format('YYYY-MM-DD')
+                          const on = multiDates.includes(iso)
+                          return (
+                            <button
+                              key={iso}
+                              type="button"
+                              className={`multi-day ${on ? 'on' : ''}`}
+                              onClick={() => setMultiDates((p) => (on ? p.filter((x) => x !== iso) : [...p, iso]))}
+                            >
+                              {d.date()}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {multiDates.length > 1 && (
+                        <div className="multi-selected">{multiDates.length} {t('days')}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {showPresets && (
                 <div className="preset-block">

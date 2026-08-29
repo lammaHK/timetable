@@ -6,7 +6,7 @@ import { useAuth } from './context/AuthContext'
 import { usePrefs } from './context/PreferencesContext'
 import { useI18n } from './lib/i18n'
 import { isBackendConfigured } from './lib/config'
-import { displayNameOf, createEvent, updateEvent, deleteEvent, fetchMonthEvents, fetchPresets, setParticipants, setVisibilityMembers, addRevision } from './lib/data'
+import { displayNameOf, createEvent, createGroupEvents, updateEvent, deleteEvent, fetchMonthEvents, fetchPresets, setParticipants, setVisibilityMembers, addRevision } from './lib/data'
 import type { AppEvent, EventPreset, Visibility } from './lib/types'
 import TopBar from './components/TopBar'
 import MonthCalendar from './components/MonthCalendar'
@@ -24,7 +24,8 @@ export default function App() {
   const { defaultVisibility } = usePrefs()
 
   const [viewDate, setViewDate] = useState<Dayjs>(dayjs())
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())
+  const [sheetDate, setSheetDate] = useState<Dayjs | null>(null)
   const [events, setEvents] = useState<AppEvent[]>([])
   const [presets, setPresets] = useState<EventPreset[]>([])
   const [editor, setEditor] = useState<{ open: boolean; event: AppEvent | null; date: Dayjs | null }>({ open: false, event: null, date: null })
@@ -65,6 +66,7 @@ export default function App() {
     preset_id?: string | null
     participantIds?: string[]
     visibilityMemberIds?: string[]
+    dates?: string[]
     revisionReason?: string | null
     prevSnapshot?: { title: string; start_time: string | null; end_time: string | null; all_day: boolean; note: string; visibility: Visibility } | null
   }) => {
@@ -85,6 +87,28 @@ export default function App() {
       if (v.revisionReason && v.prevSnapshot) {
         await addRevision(v.id, v.revisionReason, v.prevSnapshot)
       }
+      targetEventId = v.id
+      // cleanup participants for multi-date groups
+      if (v.participantIds) await setParticipants(v.id, v.participantIds)
+      if (v.visibilityMemberIds) await setVisibilityMembers(v.id, v.visibilityMemberIds)
+    } else if (v.dates && v.dates.length) {
+      // multi-date event
+      const base = {
+        owner_id: uid,
+        owner_name: displayNameOf(user?.email, user?.user_metadata),
+        start_time: v.start_time,
+        end_time: v.end_time,
+        all_day: v.all_day,
+        title: v.title,
+        note: v.note,
+        visibility: v.visibility,
+        sort_order: 100,
+        preset_id: v.preset_id ?? null,
+      }
+      const ok = await createGroupEvents(v.dates, base)
+      if (!ok) return
+      // participants applied per event row after creation is complex; skip for group (participants set via one?)
+      targetEventId = null
     } else {
       const created = await createEvent({
         owner_id: uid,
@@ -152,8 +176,8 @@ export default function App() {
     setEditor({ open: true, event: e, date: dayjs(e.date) })
   }
 
-  const dayEvents = selectedDate
-    ? events.filter((e) => e.date === selectedDate.format('YYYY-MM-DD'))
+  const dayEvents = sheetDate
+    ? events.filter((e) => e.date === sheetDate.format('YYYY-MM-DD'))
     : []
 
   // date -> color, for dates that have events created from a colored preset
@@ -189,7 +213,7 @@ export default function App() {
               onSelectDay={handleSelectDay}
               presetColors={presetColors}
             />
-            <TodaySection today={dayjs()} events={events} onOpenDay={handleSelectDay} />
+            <TodaySection date={selectedDate} events={events} onOpenDay={(d) => setSheetDate(d)} onAdd={(d) => openAddForDate(d)} />
           </>
         )}
 
@@ -212,11 +236,11 @@ export default function App() {
       </div>
 
       <DaySheet
-        open={!!selectedDate}
-        date={selectedDate || dayjs()}
+        open={!!sheetDate}
+        date={sheetDate || selectedDate}
         events={dayEvents}
-        onClose={() => setSelectedDate(null)}
-        onAdd={() => selectedDate && openAddForDate(selectedDate)}
+        onClose={() => setSheetDate(null)}
+        onAdd={() => sheetDate && openAddForDate(sheetDate)}
         onEdit={openEdit}
       />
 

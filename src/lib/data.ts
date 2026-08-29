@@ -47,6 +47,7 @@ export interface EventInput {
   visibility: Visibility
   sort_order: number
   preset_id?: string | null
+  group_id?: string | null
 }
 
 export async function createEvent(input: EventInput): Promise<AppEvent | null> {
@@ -56,6 +57,18 @@ export async function createEvent(input: EventInput): Promise<AppEvent | null> {
     return null
   }
   return data as AppEvent
+}
+
+/** Create the same event across multiple dates, sharing one group_id. */
+export async function createGroupEvents(dates: string[], base: Omit<EventInput, 'date' | 'group_id'>): Promise<boolean> {
+  const groupId = crypto.randomUUID()
+  const rows = dates.map((date) => ({ ...base, date, group_id: groupId }))
+  const { error } = await supabase.from('events').insert(rows)
+  if (error) {
+    console.error('createGroupEvents', error)
+    return false
+  }
+  return true
 }
 
 export async function updateEvent(id: string, patch: Partial<AppEvent>): Promise<boolean> {

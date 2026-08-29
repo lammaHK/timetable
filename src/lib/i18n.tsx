@@ -104,6 +104,7 @@ const dict = {
     // today section
     todaySchedule: "Today's schedule",
     noEventsToday: 'Nothing scheduled today',
+    noEventsThatDay: 'Nothing scheduled that day',
     moreEvents: 'More…',
     half: 'Half',
     full: 'Full',
@@ -132,6 +133,10 @@ const dict = {
     editModeNormalHint: 'Save without recording a reason',
     editModeForcedHint: 'Record reason + full history of what it was',
     timeTo: 'to',
+    multiDate: 'Multiple dates',
+    multiDateHint: 'Apply to several days',
+    pickDates: 'Pick dates',
+    days: 'days',
     // members management
     membersTitle: 'Manage members',
     membersSubtitle: 'Members',
@@ -242,6 +247,7 @@ const dict = {
     // today section
     todaySchedule: '今日日程',
     noEventsToday: '今天沒有排程',
+    noEventsThatDay: '當日沒有排程',
     moreEvents: '更多…',
     half: '半拉',
     full: '全拉',
@@ -270,6 +276,10 @@ const dict = {
     editModeNormalHint: '直接儲存，不需理由',
     editModeForcedHint: '需理由＋完整「之前是甚麼」記錄',
     timeTo: '至',
+    multiDate: '多日期',
+    multiDateHint: '套用到多天',
+    pickDates: '選擇日期',
+    days: '天',
     // members management
     membersTitle: '管理成員',
     membersSubtitle: '成員',

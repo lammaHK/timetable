@@ -14,6 +14,7 @@ export interface AppEvent {
   sort_order: number
   preset_id?: string | null
   status: 'active' | 'cancelled'
+  group_id?: string | null
   created_at: string
 }
 

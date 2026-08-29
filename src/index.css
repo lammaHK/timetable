@@ -269,9 +269,40 @@ select {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 6px;
+  padding: 8px 12px 8px 16px;
   transition: background 0.2s;
+}
+.today-head-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+.today-add {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+  transition: transform 0.15s var(--ease), background 0.2s;
+}
+.today-add:hover {
+  background: var(--hover);
+}
+.today-add:active {
+  transform: scale(0.9);
+}
+.today-lunar {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
 }
 .today-head:hover {
   background: var(--hover);
@@ -864,6 +895,53 @@ select {
 .seg.seg-2 {
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
+}
+.multi-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.multi-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.multi-picker {
+  margin-top: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+}
+.multi-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.multi-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.multi-day {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.15s var(--ease);
+}
+.multi-day.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+.multi-selected {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
 }
 
 /* Date banner in the event editor */

@@ -1,35 +1,41 @@
 import { motion } from 'framer-motion'
-import { CalendarCheck } from '@phosphor-icons/react'
+import { CalendarCheck, Plus } from '@phosphor-icons/react'
 import type { Dayjs } from 'dayjs'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import { VisibilityBadge } from './VisibilityPicker'
+import { getDateInfo } from '../lib/cn'
 import { formatTime } from '../lib/dates'
 import type { AppEvent } from '../lib/types'
 
-export default function TodaySection({
-  today,
+export default function DayCard({
+  date,
   events,
   onOpenDay,
+  onAdd,
 }: {
-  today: Dayjs
+  date: Dayjs
   events: AppEvent[]
   onOpenDay: (d: Dayjs) => void
+  onAdd: (d: Dayjs) => void
 }) {
   const { t, lang } = useI18n()
   const { user } = useAuth()
   const WEEK_ZH = ['日', '一', '二', '三', '四', '五', '六']
   const WEEK_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const weekdayLabel = (d: Dayjs) =>
-    lang === 'zh' ? `週${WEEK_ZH[d.day()]}` : WEEK_EN[d.day()]
+  const weekdayLabel = (d: Dayjs) => (lang === 'zh' ? `週${WEEK_ZH[d.day()]}` : WEEK_EN[d.day()])
+  const monthZh = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+  const monthEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-  const todayStr = today.format('YYYY-MM-DD')
-  // events already filtered by RLS; just grab today's
-  const todays = events.filter((e) => e.date === todayStr)
+  const dateStr = date.format('YYYY-MM-DD')
+  const isToday = dateStr === dayjsToday()
+  const cn = getDateInfo(dateStr)
+  const todays = events.filter((e) => e.date === dateStr)
   const sorted = [...todays].sort((a, b) => {
     if (a.all_day !== b.all_day) return a.all_day ? -1 : 1
     return (a.start_time || '99').localeCompare(b.start_time || '99')
   })
+  const title = `${lang === 'zh' ? monthZh[date.month()] : monthEn[date.month()]} ${date.date()} · ${weekdayLabel(date)}`
 
   return (
     <motion.div
@@ -38,28 +44,36 @@ export default function TodaySection({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
     >
-      <button className="today-head" onClick={() => onOpenDay(today)}>
-        <span className="today-head-icon">
-          <CalendarCheck size={18} weight="duotone" />
-        </span>
-        <span className="today-title">
-          {today.format('M/D')} · {weekdayLabel(today)}
-        </span>
-        <span className="today-count">{sorted.length}</span>
-        <svg className="today-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9 6l6 6-6 6" />
-        </svg>
-      </button>
+      <div className="today-head">
+        <button className="today-head-main" onClick={() => onOpenDay(date)}>
+          <span className="today-head-icon">
+            <CalendarCheck size={18} weight="duotone" />
+          </span>
+          <span className="today-title">
+            {title}
+            <span className="today-lunar"> {cn.holiday || cn.festival || cn.lunarFull}</span>
+          </span>
+          <span className="today-count">{sorted.length}</span>
+          <svg className="today-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+        {user && (
+          <button className="today-add" onClick={() => onAdd(date)} aria-label={t('addEvent')} title={t('addEvent')}>
+            <Plus size={18} weight="bold" />
+          </button>
+        )}
+      </div>
 
       {sorted.length === 0 ? (
         <div className="today-empty">
-          <span>{t('noEventsToday')}</span>
+          <span>{isToday ? t('noEventsToday') : t('noEventsThatDay')}</span>
           {user ? null : <span className="today-hint">{t('signInToEdit')}</span>}
         </div>
       ) : (
         <div className="today-list">
           {sorted.slice(0, 4).map((e) => (
-            <button key={e.id} className="today-row pressable" onClick={() => onOpenDay(today)}>
+            <button key={e.id} className="today-row pressable" onClick={() => onOpenDay(date)}>
               <div className="today-row-time">
                 {e.all_day ? t('allDay') : formatTime(e.start_time) || '--'}
               </div>
@@ -74,4 +88,8 @@ export default function TodaySection({
       )}
     </motion.div>
   )
+}
+
+function dayjsToday() {
+  return new Date().toLocaleDateString('sv-SE')
 }
