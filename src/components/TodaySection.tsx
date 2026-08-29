@@ -1,6 +1,6 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { CalendarCheck, Plus } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
 import type { Dayjs } from 'dayjs'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
@@ -9,6 +9,16 @@ import { getDateInfo } from '../lib/cn'
 import { fetchEventsParticipants } from '../lib/data'
 import { formatTime } from '../lib/dates'
 import type { AppEvent } from '../lib/types'
+
+type Slot = 'morning' | 'afternoon' | 'evening'
+
+function slotOf(e: AppEvent): Slot {
+  if (e.all_day || !e.start_time) return 'morning'
+  const h = Number(e.start_time.slice(0, 2))
+  if (h < 12) return 'morning'
+  if (h < 18) return 'afternoon'
+  return 'evening'
+}
 
 export default function DayCard({
   date,
@@ -44,10 +54,45 @@ export default function DayCard({
   // participant names per event (for avatars)
   const [partByEvent, setPartByEvent] = useState<Record<string, string[]>>({})
   useEffect(() => {
-    const ids = events.filter((e) => e.date === dateStr).map((e) => e.id)
+    const ids = todays.map((e) => e.id)
     fetchEventsParticipants(ids).then((m) => setPartByEvent(m))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateStr, events.length])
+
+  // group into morning/afternoon/evening
+  const slots: { key: Slot; title: string; events: AppEvent[] }[] = [
+    { key: 'morning', title: t('morning'), events: [] },
+    { key: 'afternoon', title: t('afternoon'), events: [] },
+    { key: 'evening', title: t('evening'), events: [] },
+  ]
+  for (const e of sorted) slots.find((s) => s.key === slotOf(e))!.events.push(e)
+  const haveEvents = slots.some((s) => s.events.length > 0)
+
+  const renderRow = (e: AppEvent) => {
+    const parts = partByEvent[e.id] || []
+    const timeLabel = e.all_day
+      ? t('allDay')
+      : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`
+    return (
+      <button key={e.id} className="today-row pressable" onClick={() => onOpenEvent(e)}>
+        <div className="today-row-main">
+          <div className="today-row-title">{e.title}</div>
+          <div className="today-row-time">{timeLabel}</div>
+        </div>
+        <div className="today-row-right">
+          {parts.length > 0 && (
+            <div className="today-avatars">
+              {parts.slice(0, 3).map((nm, i) => (
+                <span key={i} className="today-avatar" title={nm}>{nm[0]?.toUpperCase()}</span>
+              ))}
+              {parts.length > 3 && <span className="today-avatar-more">+{parts.length - 3}</span>}
+            </div>
+          )}
+          <VisibilityBadge v={e.visibility} />
+        </div>
+      </button>
+    )
+  }
 
   return (
     <motion.div
@@ -77,40 +122,20 @@ export default function DayCard({
         )}
       </div>
 
-      {sorted.length === 0 ? (
+      {!haveEvents ? (
         <div className="today-empty">
           <span>{isToday ? t('noEventsToday') : t('noEventsThatDay')}</span>
           {user ? null : <span className="today-hint">{t('signInToEdit')}</span>}
         </div>
       ) : (
         <div className="today-list">
-          {sorted.slice(0, 4).map((e) => {
-            const parts = partByEvent[e.id] || []
-            const timeLabel = e.all_day
-              ? t('allDay')
-              : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`
-            return (
-              <button key={e.id} className="today-row pressable" onClick={() => onOpenEvent(e)}>
-                <div className="today-row-main">
-                  <div className="today-row-title">{e.title}</div>
-                  <div className="today-row-time">{timeLabel}</div>
-                </div>
-                <div className="today-row-right">
-                  {parts.length > 0 && (
-                    <div className="today-avatars">
-                      {parts.slice(0, 3).map((nm, i) => (
-                        <span key={i} className="today-avatar" title={nm}>{nm[0]?.toUpperCase()}</span>
-                      ))}
-                      {parts.length > 3 && <span className="today-avatar-more">+{parts.length - 3}</span>}
-                    </div>
-                  )}
-                  <VisibilityBadge v={e.visibility} />
-                </div>
-              </button>
-            )
-          })}
-          {sorted.length > 4 && (
-            <div className="today-more">{t('moreEvents')}</div>
+          {slots.map((slot) =>
+            slot.events.length ? (
+              <div key={slot.key} className="today-slot">
+                <div className="today-slot-title">{slot.title}</div>
+                {slot.events.map(renderRow)}
+              </div>
+            ) : null,
           )}
         </div>
       )}

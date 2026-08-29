@@ -140,6 +140,9 @@ const dict = {
     multiDateHint: 'Apply to several days',
     pickDates: 'Pick dates',
     days: 'days',
+    morning: 'Morning',
+    afternoon: 'Afternoon',
+    evening: 'Evening',
     // members management
     membersTitle: 'Manage members',
     membersSubtitle: 'Members',
@@ -286,6 +289,9 @@ const dict = {
     multiDateHint: '套用到多天',
     pickDates: '選擇日期',
     days: '天',
+    morning: '上午',
+    afternoon: '下午',
+    evening: '晚上',
     // members management
     membersTitle: '管理成員',
     membersSubtitle: '成員',
