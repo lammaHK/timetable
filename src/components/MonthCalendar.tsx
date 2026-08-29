@@ -113,7 +113,7 @@ export default function MonthCalendar({
             return (
               <motion.button
                 key={iso}
-                className={`day-cell in-month ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${isWeekend ? 'wk-end' : ''} ${marker ? 'holiday' : ''} ${itemClass(wd)}`}
+                className={`day-cell ${cell.inMonth ? 'in-month' : 'out-month'} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${isWeekend ? 'wk-end' : ''} ${marker ? 'holiday' : ''} ${itemClass(wd)}`}
                 onClick={() => onSelectDay(cell.date)}
                 whileTap={{ scale: 0.92 }}
                 animate={isSelected ? { scale: [1, 1.12, 1] } : { scale: 1 }}
