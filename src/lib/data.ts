@@ -186,6 +186,34 @@ export async function fetchParticipantIds(eventId: string): Promise<string[]> {
   return (data ?? []).map((r: { user_id: string }) => r.user_id)
 }
 
+/** Fetch display names of participants grouped by event_id. */
+export async function fetchEventsParticipants(eventIds: string[]): Promise<Record<string, string[]>> {
+  const map: Record<string, string[]> = {}
+  if (!eventIds.length) return map
+  const { data, error } = await supabase
+    .from('event_participants')
+    .select('event_id, user_id')
+    .in('event_id', eventIds)
+  if (error) {
+    console.error('fetchEventsParticipants', error)
+    return map
+  }
+  // resolve names from profiles via list_active_members-like approach: query profiles for those ids
+  const userIds = Array.from(new Set((data ?? []).map((r: { user_id: string }) => r.user_id)))
+  const { data: profs } = await supabase.from('profiles').select('id, full_name, email').in('id', userIds)
+  const nameById: Record<string, string> = {}
+  for (const p of profs ?? []) {
+    const nm = p.full_name || (p.email ? p.email.split('@')[0] : 'member')
+    nameById[p.id] = nm
+  }
+  for (const r of data ?? []) {
+    const eid = r.event_id as string
+    if (!map[eid]) map[eid] = []
+    map[eid].push(nameById[r.user_id] || 'member')
+  }
+  return map
+}
+
 export async function setVisibilityMembers(eventId: string, userIds: string[]): Promise<boolean> {
   const { error } = await supabase.rpc('set_visibility_members', { p_event_id: eventId, p_user_ids: userIds })
   if (error) {

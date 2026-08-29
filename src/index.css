@@ -700,6 +700,11 @@ select {
   font-size: 11px;
   color: var(--text-faint);
 }
+.event-time-inline {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+}
 
 .empty-state {
   text-align: center;
@@ -882,15 +887,17 @@ select {
 .time-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 .time-col {
   flex: 1;
+  min-width: 0;
 }
 .time-sep {
   color: var(--text-faint);
   font-weight: 700;
   flex-shrink: 0;
+  padding: 0 1px;
 }
 .seg.seg-2 {
   grid-template-columns: repeat(2, 1fr);

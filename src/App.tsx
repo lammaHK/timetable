@@ -149,15 +149,6 @@ export default function App() {
     }
   }
 
-  const openAdd = () => {
-    if (!user) {
-      setShowLogin(true)
-      return
-    }
-    // FAB add: open editor for today WITHOUT opening today's DaySheet
-    setEditor({ open: true, event: null, date: dayjs() })
-  }
-
   const openAddForDate = (d: Dayjs) => {
     if (!user) {
       setShowLogin(true)
@@ -244,7 +235,7 @@ export default function App() {
         onEdit={openEdit}
       />
 
-      <button className="fab" onClick={openAdd} aria-label={t('add')}>
+      <button className="fab" onClick={() => openAddForDate(selectedDate)} aria-label={t('add')}>
         <Plus size={26} weight="bold" />
       </button>
 

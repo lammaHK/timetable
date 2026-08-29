@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as RPointerEvent } from 'react'
 import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion'
 import type { Dayjs } from 'dayjs'
@@ -6,6 +6,7 @@ import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import { VisibilityBadge } from './VisibilityPicker'
+import { fetchEventsParticipants } from '../lib/data'
 import { formatTime } from '../lib/dates'
 import { getDateInfo } from '../lib/cn'
 import type { AppEvent } from '../lib/types'
@@ -42,6 +43,13 @@ export default function DaySheet({
     if (a.all_day !== b.all_day) return a.all_day ? -1 : 1
     return (a.start_time || '99').localeCompare(b.start_time || '99')
   })
+
+  const [partByEvent, setPartByEvent] = useState<Record<string, string[]>>({})
+  useEffect(() => {
+    const ids = events.map((e) => e.id)
+    fetchEventsParticipants(ids).then((m) => setPartByEvent(m))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events.map((e) => e.id).join(',')])
 
   const vh = typeof window !== 'undefined' ? window.innerHeight : 800
   const halfH = vh * 0.55
@@ -169,6 +177,10 @@ export default function DaySheet({
                         {e.note && <div className="event-note">{e.note}</div>}
                         <div className="event-meta">
                           <VisibilityBadge v={e.visibility} />
+                          <span className="event-time-inline">{e.all_day ? t('allDay') : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`}</span>
+                          {partByEvent[e.id] && partByEvent[e.id].length > 0 && (
+                            <span className="event-owner">· {partByEvent[e.id].join(', ')}</span>
+                          )}
                           {!mine && e.owner_name && <span className="event-owner">· {e.owner_name}</span>}
                         </div>
                       </div>
