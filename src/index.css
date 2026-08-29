@@ -244,10 +244,6 @@ select {
   color: var(--text-faint);
   letter-spacing: 0.4px;
 }
-.weekday.wk-sun,
-.weekday.wk-sat {
-  color: var(--accent-strong);
-}
 
 .cal-grid {
   display: grid;
@@ -447,20 +443,26 @@ select {
   opacity: 0.55;
 }
 .day-cell:hover {
-  background: var(--hover);
   transform: translateY(-1px);
+}
+.day-cell:hover .day-num {
+  background: var(--accent-soft);
 }
 .day-cell:active {
   transform: scale(0.94);
 }
-/* weekend: same color as weekdays (no tint) */
-.day-cell.in-month .day-num,
-.day-cell.w0-sun .day-num,
-.day-cell.w6-sat .day-num {
-  color: var(--text);
+/* weekend: in-month weekend numbers are teal */
+.day-cell.in-month.w0-sun .day-num,
+.day-cell.in-month.w6-sat .day-num {
+  color: var(--accent-strong);
 }
+/* today keeps accent; out-month is always grey (incl weekends) */
 .day-cell.today:not(.selected) .day-num {
   color: var(--accent);
+}
+.day-cell.out-month .day-num {
+  color: var(--text-faint);
+  opacity: 0.55;
 }
 
 .day-num {
@@ -743,6 +745,90 @@ select {
   color: var(--accent);
 }
 
+/* Event detail sheet */
+.detail-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  padding: 4px 0 10px;
+}
+.detail-note {
+  font-size: 14px;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  padding-bottom: 12px;
+}
+.detail-meta {
+  padding-bottom: 14px;
+}
+.detail-owner {
+  border-top: 1px solid var(--border);
+  padding: 14px 0;
+}
+.owner-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.owner-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: var(--accent-contrast);
+  display: inline-grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 16px;
+}
+.owner-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+.owner-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-top: 2px;
+}
+.detail-parts {
+  border-top: 1px solid var(--border);
+  padding: 14px 0;
+}
+.detail-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.detail-avatars {
+  display: flex;
+  align-items: center;
+}
+.detail-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  display: inline-grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 14px;
+  margin-left: -8px;
+}
+.detail-avatar:first-child {
+  margin-left: 0;
+}
+
 .empty-state {
   text-align: center;
   padding: 40px 20px;
@@ -919,13 +1005,19 @@ select {
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+.all-day-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
 }
 /* time inputs with a separator between them */
 .time-row {
   display: flex;
   align-items: center;
   gap: 2px;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .time-col {
   flex: 0 1 auto;

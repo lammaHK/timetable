@@ -12,6 +12,7 @@ import TopBar from './components/TopBar'
 import MonthCalendar from './components/MonthCalendar'
 import TodaySection from './components/TodaySection'
 import DaySheet from './components/DaySheet'
+import EventDetailSheet from './components/EventDetailSheet'
 import EventEditor from './components/EventEditor'
 import PresetsManageModal from './components/PresetsManageModal'
 import SettingsModal from './components/SettingsModal'
@@ -26,6 +27,7 @@ export default function App() {
   const [viewDate, setViewDate] = useState<Dayjs>(dayjs())
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())
   const [sheetDate, setSheetDate] = useState<Dayjs | null>(null)
+  const [detailEvent, setDetailEvent] = useState<AppEvent | null>(null)
   const [events, setEvents] = useState<AppEvent[]>([])
   const [presets, setPresets] = useState<EventPreset[]>([])
   const [editor, setEditor] = useState<{ open: boolean; event: AppEvent | null; date: Dayjs | null }>({ open: false, event: null, date: null })
@@ -204,7 +206,7 @@ export default function App() {
               onSelectDay={handleSelectDay}
               presetColors={presetColors}
             />
-            <TodaySection date={selectedDate} events={events} onOpenDay={(d) => setSheetDate(d)} onAdd={(d) => openAddForDate(d)} />
+            <TodaySection date={selectedDate} events={events} onOpenDay={(d) => setSheetDate(d)} onOpenEvent={(e) => setDetailEvent(e)} onAdd={(d) => openAddForDate(d)} />
           </>
         )}
 
@@ -233,6 +235,15 @@ export default function App() {
         onClose={() => setSheetDate(null)}
         onAdd={() => sheetDate && openAddForDate(sheetDate)}
         onEdit={openEdit}
+      />
+      <EventDetailSheet
+        open={!!detailEvent}
+        event={detailEvent}
+        onClose={() => setDetailEvent(null)}
+        onViewDay={(d) => {
+          setDetailEvent(null)
+          setSheetDate(d)
+        }}
       />
 
       <button className="fab" onClick={() => openAddForDate(selectedDate)} aria-label={t('add')}>

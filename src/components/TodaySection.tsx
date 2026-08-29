@@ -14,11 +14,13 @@ export default function DayCard({
   date,
   events,
   onOpenDay,
+  onOpenEvent,
   onAdd,
 }: {
   date: Dayjs
   events: AppEvent[]
   onOpenDay: (d: Dayjs) => void
+  onOpenEvent: (e: AppEvent) => void
   onAdd: (d: Dayjs) => void
 }) {
   const { t, lang } = useI18n()
@@ -88,7 +90,7 @@ export default function DayCard({
               ? t('allDay')
               : `${e.start_time ? formatTime(e.start_time) : '--'}${e.end_time ? ' - ' + formatTime(e.end_time) : ''}`
             return (
-              <button key={e.id} className="today-row pressable" onClick={() => onOpenDay(date)}>
+              <button key={e.id} className="today-row pressable" onClick={() => onOpenEvent(e)}>
                 <div className="today-row-main">
                   <div className="today-row-title">{e.title}</div>
                   <div className="today-row-time">{timeLabel}</div>
