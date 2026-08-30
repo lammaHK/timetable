@@ -113,6 +113,7 @@ export default function EventEditor({
   const [partError, setPartError] = useState<string | null>(null)
   const [editMode, setEditMode] = useState<'normal' | 'forced'>('normal')
   const [multiDates, setMultiDates] = useState<string[]>([])
+  const [saving, setSaving] = useState(false)
 
   // Load member options + (when editing) participant/visibility ids + revisions.
   useEffect(() => {
@@ -180,12 +181,16 @@ export default function EventEditor({
     setPresetId(p.id)
   }
 
-  const submit = () => {
-    if (!title.trim() || timeError) return
+  const submit = async () => {
+    if (saving || !title.trim() || timeError) return
+    setSaving(true)
     if (isEdit && event) {
       const forced = editMode === 'forced'
-      if (forced && !revisionReason.trim()) return
-      onSave({
+      if (forced && !revisionReason.trim()) {
+        setSaving(false)
+        return
+      }
+      await onSave({
         id: event.id,
         title: title.trim(),
         start_time: allDay || !startTime ? null : startTime,
@@ -210,7 +215,7 @@ export default function EventEditor({
           : null,
       })
     } else {
-      onSave({
+      await onSave({
         id: event?.id,
         title: title.trim(),
         start_time: allDay || !startTime ? null : startTime,
@@ -224,6 +229,7 @@ export default function EventEditor({
         dates: multiDates.length ? multiDates : undefined,
       })
     }
+    setSaving(false)
   }
 
   const dateLabel = date ? date.format('YYYY-MM-DD') : ''
@@ -419,8 +425,8 @@ export default function EventEditor({
                 <button className="btn btn-ghost" onClick={onClose}>
                   {t('cancel')}
                 </button>
-                <button className="btn btn-primary" onClick={() => { if (!isEdit || confirm(t('confirmSave'))) submit() }} disabled={!title.trim() || Boolean(timeError) || (isEdit && editMode === 'forced' && !revisionReason.trim())}>
-                  {t('save')}
+                <button className="btn btn-primary" onClick={() => { if (!isEdit || confirm(t('confirmSave'))) submit() }} disabled={saving || !title.trim() || Boolean(timeError) || (isEdit && editMode === 'forced' && !revisionReason.trim())}>
+                  {saving ? t('saving') : t('save')}
                 </button>
               </div>
             </motion.div>
