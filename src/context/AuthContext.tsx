@@ -13,6 +13,7 @@ interface AuthCtx {
   /** true while we're resolving the persisted session (show a loader) */
   loading: boolean
   signOut: () => Promise<void>
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthCtx>({
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthCtx>({
   isAdmin: false,
   loading: true,
   signOut: async () => {},
+  refreshProfile: async () => {},
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -73,6 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     signOut: async () => {
       await supabase.auth.signOut()
+    },
+    refreshProfile: async () => {
+      if (session?.user?.id) {
+        const p = await fetchProfile(session.user.id)
+        setProfile(p)
+      }
     },
   }
 

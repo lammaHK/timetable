@@ -7,6 +7,7 @@ import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import { getDateInfo } from '../lib/cn'
 import { fetchEventsParticipants } from '../lib/data'
+import Avatar from './Avatar'
 import { formatTime } from '../lib/dates'
 import type { AppEvent } from '../lib/types'
 
@@ -55,7 +56,7 @@ export default function DayCard({
     : `${monthEn[date.month()]} ${date.date()} (${weekdayLabel(date)})`
 
   // participant names per event (for avatars)
-  const [partByEvent, setPartByEvent] = useState<Record<string, string[]>>({})
+  const [partByEvent, setPartByEvent] = useState<Record<string, { name: string; color: string | null }[]>>({})
   useEffect(() => {
     const ids = todays.map((e) => e.id)
     fetchEventsParticipants(ids).then((m) => setPartByEvent(m))
@@ -93,7 +94,7 @@ export default function DayCard({
           {parts.length > 0 && (
             <div className="today-avatars">
               {parts.slice(0, 3).map((nm, i) => (
-                <span key={i} className="today-avatar" title={nm}>{nm[0]?.toUpperCase()}</span>
+                <Avatar key={i} name={nm.name} color={nm.color} size={22} className="today-avatar" />
               ))}
               {parts.length > 3 && <span className="today-avatar-more">+{parts.length - 3}</span>}
             </div>

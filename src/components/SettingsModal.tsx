@@ -41,7 +41,7 @@ export default function SettingsModal({
 }) {
   const { t } = useI18n()
   const { theme, setTheme, lang, setLang, defaultVisibility, setDefaultVisibility } = usePrefs()
-  const { user, signOut, isAdmin } = useAuth()
+  const { user, signOut, isAdmin, refreshProfile } = useAuth()
   const displayName = (user?.user_metadata?.username as string) || user?.user_metadata?.full_name || (user?.email && !user.email.endsWith('@timetable.local') ? user.email.split('@')[0] : '') || ''
   const avatarChar = displayName?.[0]?.toUpperCase() || '?'
   const showRawEmail = user?.email && !user.email.endsWith('@timetable.local')
@@ -49,6 +49,7 @@ export default function SettingsModal({
   const pickColor = async (c: string) => {
     setAvColor(c)
     await setAvatarColor(c)
+    await refreshProfile()
   }
 
   return (

@@ -6,9 +6,10 @@ import { X, CalendarBlank, Plus } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
 import { VisibilityBadge } from './VisibilityPicker'
-import { fetchEventsParticipants } from '../lib/data'
+import { fetchEventsParticipants, fetchAvatarColors } from '../lib/data'
 import { formatTime } from '../lib/dates'
 import { getDateInfo } from '../lib/cn'
+import Avatar from './Avatar'
 import type { AppEvent } from '../lib/types'
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -45,10 +46,13 @@ export default function DaySheet({
     return (a.start_time || '99').localeCompare(b.start_time || '99')
   })
 
-  const [partByEvent, setPartByEvent] = useState<Record<string, string[]>>({})
+  const [partByEvent, setPartByEvent] = useState<Record<string, { name: string; color: string | null }[]>>({})
+  const [ownerColors, setOwnerColors] = useState<Record<string, string | null>>({})
   useEffect(() => {
     const ids = events.map((e) => e.id)
     fetchEventsParticipants(ids).then((m) => setPartByEvent(m))
+    const ownerIds = Array.from(new Set(events.map((e) => e.owner_id)))
+    fetchAvatarColors(ownerIds).then((c) => setOwnerColors(c))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events.map((e) => e.id).join(',')])
 
@@ -182,13 +186,13 @@ export default function DaySheet({
                         {e.note && <div className="event-note">{e.note}</div>}
                         <div className="event-people">
                           <span className="evperson owner" title={e.owner_name || t('owner')}>
-                            <span className="evperson-av owner-av">{(e.owner_name || t('owner'))[0]?.toUpperCase()}</span>
+                            <Avatar name={e.owner_name || t('owner')} color={ownerColors[e.owner_id]} size={22} />
                             <span className="evperson-tag">{t('owner')}</span>
                           </span>
                           {partByEvent[e.id] && partByEvent[e.id].length > 0 && (
-                            <span className="evperson-list" title={partByEvent[e.id].join(', ')}>
-                              {partByEvent[e.id].slice(0, 3).map((nm, i) => (
-                                <span key={i} className="evperson-av part-av" title={nm}>{nm[0]?.toUpperCase()}</span>
+                            <span className="evperson-list" title={partByEvent[e.id].map((p) => p.name).join(', ')}>
+                              {partByEvent[e.id].slice(0, 3).map((p, i) => (
+                                <Avatar key={i} name={p.name} color={p.color} size={22} className="part-av" />
                               ))}
                               {partByEvent[e.id].length > 3 && <span className="evperson-more">+{partByEvent[e.id].length - 3}</span>}
                             </span>

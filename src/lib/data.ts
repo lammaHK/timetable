@@ -186,9 +186,9 @@ export async function fetchParticipantIds(eventId: string): Promise<string[]> {
   return (data ?? []).map((r: { user_id: string }) => r.user_id)
 }
 
-/** Fetch display names of participants grouped by event_id. */
-export async function fetchEventsParticipants(eventIds: string[]): Promise<Record<string, string[]>> {
-  const map: Record<string, string[]> = {}
+/** Fetch display names + colors of participants grouped by event_id. */
+export async function fetchEventsParticipants(eventIds: string[]): Promise<Record<string, { name: string; color: string | null }[]>> {
+  const map: Record<string, { name: string; color: string | null }[]> = {}
   if (!eventIds.length) return map
   const { data, error } = await supabase
     .from('event_participants')
@@ -198,18 +198,17 @@ export async function fetchEventsParticipants(eventIds: string[]): Promise<Recor
     console.error('fetchEventsParticipants', error)
     return map
   }
-  // resolve names from profiles via list_active_members-like approach: query profiles for those ids
   const userIds = Array.from(new Set((data ?? []).map((r: { user_id: string }) => r.user_id)))
-  const { data: profs } = await supabase.from('profiles').select('id, full_name, email').in('id', userIds)
-  const nameById: Record<string, string> = {}
+  const { data: profs } = await supabase.from('profiles').select('id, full_name, email, avatar_color').in('id', userIds)
+  const infoById: Record<string, { name: string; color: string | null }> = {}
   for (const p of profs ?? []) {
     const nm = p.full_name || (p.email ? p.email.split('@')[0] : 'member')
-    nameById[p.id] = nm
+    infoById[p.id] = { name: nm, color: p.avatar_color ?? null }
   }
   for (const r of data ?? []) {
     const eid = r.event_id as string
     if (!map[eid]) map[eid] = []
-    map[eid].push(nameById[r.user_id] || 'member')
+    map[eid].push(infoById[r.user_id] || { name: 'member', color: null })
   }
   return map
 }
@@ -282,6 +281,15 @@ export async function setAvatarColor(color: string): Promise<boolean> {
     return false
   }
   return true
+}
+
+/** Fetch avatar_color for a set of user ids. */
+export async function fetchAvatarColors(userIds: string[]): Promise<Record<string, string | null>> {
+  const map: Record<string, string | null> = {}
+  if (!userIds.length) return map
+  const { data } = await supabase.from('profiles').select('id, avatar_color').in('id', userIds)
+  for (const p of data ?? []) map[p.id] = p.avatar_color ?? null
+  return map
 }
 
 /** Minimal display name for the user (used as owner_name on inserts). */

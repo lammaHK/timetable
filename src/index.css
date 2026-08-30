@@ -854,6 +854,14 @@ select {
 }
 
 /* Event detail sheet */
+.avatar-shared {
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  font-weight: 800;
+  border: 2px solid var(--surface);
+  flex-shrink: 0;
+}
 .detail-time {
   display: flex;
   align-items: center;

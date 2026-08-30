@@ -47,6 +47,7 @@ export interface Profile {
   full_name: string | null
   role: 'member' | 'admin'
   is_active: boolean
+  avatar_color?: string | null
   created_at: string
 }
 

@@ -3,9 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion'
 import dayjs, { Dayjs } from 'dayjs'
 import { X, CalendarBlank, Clock } from '@phosphor-icons/react'
 import { useI18n } from '../lib/i18n'
-import { fetchEventsParticipants } from '../lib/data'
+import { fetchEventsParticipants, fetchAvatarColors } from '../lib/data'
 import { formatTime } from '../lib/dates'
 import { VisibilityBadge } from './VisibilityPicker'
+import Avatar from './Avatar'
 import type { AppEvent } from '../lib/types'
 
 export default function EventDetailSheet({
@@ -20,11 +21,13 @@ export default function EventDetailSheet({
   onViewDay: (d: Dayjs) => void
 }) {
   const { t } = useI18n()
-  const [parts, setParts] = useState<string[]>([])
+  const [parts, setParts] = useState<{ name: string; color: string | null }[]>([])
+  const [ownerColor, setOwnerColor] = useState<string | null>(null)
 
   useEffect(() => {
     if (open && event) {
       fetchEventsParticipants([event.id]).then((m) => setParts(m[event.id] || []))
+      fetchAvatarColors([event.owner_id]).then((c) => setOwnerColor(c[event.owner_id] ?? null))
     }
   }, [open, event?.id])
 
@@ -67,7 +70,7 @@ export default function EventDetailSheet({
               {/* Owner with creator label */}
               <div className="detail-owner">
                 <div className="owner-row">
-                  <span className="owner-avatar">{ownerLabel[0]?.toUpperCase()}</span>
+                  <Avatar name={ownerLabel} color={ownerColor} size={40} />
                   <div>
                     <div className="owner-name">{ownerLabel}</div>
                     <div className="owner-tag">{t('owner')}</div>
@@ -81,7 +84,7 @@ export default function EventDetailSheet({
                   <div className="detail-section-label">{t('participants')}</div>
                   <div className="detail-avatars">
                     {parts.map((nm, i) => (
-                      <span key={i} className="detail-avatar" title={nm}>{nm[0]?.toUpperCase()}</span>
+                      <Avatar key={i} name={nm.name} color={nm.color} size={34} />
                     ))}
                   </div>
                 </div>

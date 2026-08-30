@@ -13,7 +13,7 @@ export default function TopBar({
 }) {
   const { t } = useI18n()
   const { theme, setTheme, lang, setLang } = usePrefs()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const effDark =
     theme === 'dark' ||
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -47,7 +47,7 @@ export default function TopBar({
         onClick={user ? onOpenSettings : onOpenLogin}
         title={user ? user.email || t('settings') : t('signIn')}
         aria-label={user ? (user.email || '') : t('signIn')}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: 'pointer', background: user ? (profile?.avatar_color || undefined) : undefined }}
       >
         {initial}
       </motion.button>
