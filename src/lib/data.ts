@@ -1,11 +1,14 @@
+import dayjs from 'dayjs'
 import { supabase } from '../lib/supabase'
 import { isBackendConfigured } from '../lib/config'
 import type { AppEvent, EventPreset, EventRevision, Profile, UserSettings, Visibility } from '../lib/types'
 
 export async function fetchMonthEvents(year: number, month: number): Promise<AppEvent[]> {
   if (!isBackendConfigured) return []
+  // use the month's real last day — hardcoded '-31' is an INVALID date for
+  // months with fewer than 31 days (Sep = 30) and makes the whole query fail
   const start = `${year}-${String(month + 1).padStart(2, '0')}-01`
-  const end = `${year}-${String(month + 1).padStart(2, '0')}-31`
+  const end = dayjs(new Date(year, month + 1, 0)).format('YYYY-MM-DD')
   const { data, error } = await supabase
     .from('events')
     .select('*')
