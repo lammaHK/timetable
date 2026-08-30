@@ -1,5 +1,9 @@
-/* TimeTable service worker — simple stale-while-revalidate for the static app. */
-const VERSION = 'v1'
+/* TimeTable service worker.
+   Strategy:
+   - navigation (HTML): network-first, cache fallback (always fresh app shell)
+   - static assets: stale-while-revalidate (serve fast, update in background)
+   - old caches are purged on activate; clients auto-reload once when a new SW takes over. */
+const VERSION = 'v2'
 const CACHE = 'timetable-' + VERSION
 
 self.addEventListener('install', () => {
@@ -11,7 +15,13 @@ self.addEventListener('activate', (event) => {
     caches
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim()),
+      .then(() => self.clients.claim())
+      .then(() =>
+        // Reload open clients once so they pick up the fresh shell immediately.
+        self.clients.matchAll({ type: 'window' }).then((clients) =>
+          clients.map((c) => c.navigate(c.url)),
+        ),
+      ),
   )
 })
 
@@ -21,7 +31,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url)
   if (url.origin !== location.origin) return
 
-  // Navigation: network-first so users always get the latest shell; fall back to cache offline.
+  // Navigation: network-first, fall back to cache when offline.
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
@@ -35,18 +45,17 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Static assets: cache-first, then network and cache the result.
+  // Static assets: stale-while-revalidate — serve cached instantly, refresh in background.
   event.respondWith(
-    caches.match(req).then(
-      (cached) =>
-        cached ||
-        fetch(req)
-          .then((res) => {
-            const copy = res.clone()
-            caches.open(CACHE).then((c) => c.put(req, copy))
-            return res
-          })
-          .catch(() => cached),
-    ),
+    caches.open(CACHE).then(async (cache) => {
+      const cached = await cache.match(req)
+      const network = fetch(req)
+        .then((res) => {
+          cache.put(req, res.clone())
+          return res
+        })
+        .catch(() => cached)
+      return cached || network
+    }),
   )
 })
