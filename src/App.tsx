@@ -84,7 +84,10 @@ export default function App() {
         note: v.note,
         visibility: v.visibility,
       })
-      if (!ok) return
+      if (!ok) {
+        alert(t('saveFailed'))
+        return
+      }
       // record revision for edits
       if (v.revisionReason && v.prevSnapshot) {
         await addRevision(v.id, v.revisionReason, v.prevSnapshot)
@@ -108,7 +111,10 @@ export default function App() {
         preset_id: v.preset_id ?? null,
       }
       const ok = await createGroupEvents(v.dates, base)
-      if (!ok) return
+      if (!ok) {
+        alert(t('saveFailed'))
+        return
+      }
       // participants applied per event row after creation is complex; skip for group (participants set via one?)
       targetEventId = null
     } else {
@@ -125,7 +131,10 @@ export default function App() {
         sort_order: 100,
         preset_id: v.preset_id ?? null,
       })
-      if (!created) return
+      if (!created) {
+        alert(t('saveFailed'))
+        return
+      }
       targetEventId = created.id
     }
     // sync participants + specific-visibility members

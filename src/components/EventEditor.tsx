@@ -425,7 +425,7 @@ export default function EventEditor({
                 <button className="btn btn-ghost" onClick={onClose}>
                   {t('cancel')}
                 </button>
-                <button className="btn btn-primary" onClick={() => { if (!isEdit || confirm(t('confirmSave'))) submit() }} disabled={saving || !title.trim() || Boolean(timeError) || (isEdit && editMode === 'forced' && !revisionReason.trim())}>
+                <button className="btn btn-primary" onClick={() => { if (!isEdit || confirm(t('confirmSave'))) submit() }} disabled={!editable || saving || !title.trim() || Boolean(timeError) || (isEdit && editMode === 'forced' && !revisionReason.trim())}>
                   {saving ? t('saving') : t('save')}
                 </button>
               </div>
