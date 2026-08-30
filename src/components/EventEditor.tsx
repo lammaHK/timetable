@@ -168,7 +168,8 @@ export default function EventEditor({
       setMultiDates([])
       if (!event) {
         setRevisions([])
-        setParticipantIds([])
+        // creator is a participant by default, so saving never blocks on empty participants
+        setParticipantIds(user ? [user.id] : [])
         setVisibilityMemberIds([])
       }
     }
