@@ -131,15 +131,10 @@ export default function EventEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, event?.id, user?.id])
 
-  // Time validation: if timed, start REQUIRES end and end REQUIRES start; end must be after start.
+  // Time validation: only require end > start when both are set. Fill one side alone is allowed.
   useEffect(() => {
     if (allDay) {
       setTimeError(null)
-      return
-    }
-    if (!!startTime !== !!endTime) {
-      // one set, the other missing
-      setTimeError(t('timePairError'))
       return
     }
     if (startTime && endTime) {
@@ -187,11 +182,6 @@ export default function EventEditor({
 
   const submit = () => {
     if (!title.trim() || timeError) return
-    // Participants are required
-    if (participantIds.length === 0) {
-      setPartError(t('participantsRequired'))
-      return
-    }
     if (isEdit && event) {
       const forced = editMode === 'forced'
       if (forced && !revisionReason.trim()) return
